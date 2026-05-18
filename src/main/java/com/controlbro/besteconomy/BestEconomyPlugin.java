@@ -21,6 +21,10 @@ import com.controlbro.besteconomy.gui.ShopCommand;
 import com.controlbro.besteconomy.gui.ShopGuiService;
 import com.controlbro.besteconomy.gui.ValuesCommand;
 import com.controlbro.besteconomy.listener.PlayerJoinListener;
+import com.controlbro.besteconomy.links.LinkCommand;
+import com.controlbro.besteconomy.rtp.ResetRtpCommand;
+import com.controlbro.besteconomy.rtp.RtpCommand;
+import com.controlbro.besteconomy.rtp.RtpService;
 import com.controlbro.besteconomy.lock.LockCommand;
 import com.controlbro.besteconomy.lock.LockService;
 import com.controlbro.besteconomy.market.GiveMarketSlotsCommand;
@@ -70,6 +74,7 @@ public class BestEconomyPlugin extends JavaPlugin {
     private UserSettingsService userSettingsService;
     private SettingsMenuService settingsMenuService;
     private LockService lockService;
+    private RtpService rtpService;
     private ShopAccountCommand registeredShopAccountCommand;
     private ScoreboardService scoreboardService;
     private TabListService tabListService;
@@ -135,6 +140,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         if (lockService != null) {
             lockService.save();
         }
+        if (rtpService != null) {
+            rtpService.save();
+        }
         stopVisuals();
         economyManager.save();
         economyManager.shutdown();
@@ -169,6 +177,10 @@ public class BestEconomyPlugin extends JavaPlugin {
         if (lockService != null) {
             lockService.save();
             lockService = null;
+        }
+        if (rtpService != null) {
+            rtpService.save();
+            rtpService = null;
         }
         settingsMenuService = null;
         if (economyManager != null) {
@@ -273,6 +285,39 @@ public class BestEconomyPlugin extends JavaPlugin {
         PluginCommand reload = getCommand("besteconomy");
         if (reload != null) {
             reload.setExecutor(new ReloadCommand(this, messageManager));
+        }
+        registerRtpCommands();
+        registerLinkCommands();
+    }
+
+    private void registerRtpCommands() {
+        if (rtpService != null) {
+            rtpService.save();
+        }
+        rtpService = new RtpService(this);
+        PluginCommand rtp = getCommand("rtp");
+        if (rtp != null) {
+            rtp.setExecutor(new RtpCommand(rtpService));
+        }
+        PluginCommand resetRtp = getCommand("resetrtp");
+        if (resetRtp != null) {
+            ResetRtpCommand resetRtpCommand = new ResetRtpCommand(rtpService);
+            resetRtp.setExecutor(resetRtpCommand);
+            resetRtp.setTabCompleter(resetRtpCommand);
+        }
+    }
+
+    private void registerLinkCommands() {
+        registerLinkCommand("discord", "links.discord");
+        registerLinkCommand("web", "links.website");
+        registerLinkCommand("bans", "links.bans");
+        registerLinkCommand("vote", "links.vote");
+    }
+
+    private void registerLinkCommand(String commandName, String configPath) {
+        PluginCommand command = getCommand(commandName);
+        if (command != null) {
+            command.setExecutor(new LinkCommand(this, configPath));
         }
     }
 
@@ -474,6 +519,18 @@ public class BestEconomyPlugin extends JavaPlugin {
         getConfig().addDefault("blackjack.win-payout-multiplier", "2");
         getConfig().addDefault("settings.keep-inventory-default", false);
         getConfig().addDefault("settings.pvp-default", true);
+        getConfig().addDefault("rtp.max-uses", 3);
+        getConfig().addDefault("rtp.range", 5000);
+        getConfig().addDefault("rtp.min-range", 0);
+        getConfig().addDefault("rtp.messages.no-permission", "&cYou do not have permission to use RTP.");
+        getConfig().addDefault("rtp.messages.no-uses-left", "&cYou have used all of your RTPs. Ask an admin if you would like more.");
+        getConfig().addDefault("rtp.messages.failed", "&cCould not find a safe RTP spot. Please try again later.");
+        getConfig().addDefault("rtp.messages.success", "&aTeleported randomly! &7RTP uses remaining: &e%remaining%&7. Ask an admin if you need more.");
+        getConfig().addDefault("rtp.messages.reset", "&aReset RTP uses for &e%player%&a.");
+        getConfig().addDefault("links.discord", java.util.List.of("&bDiscord: https://discord.example.com"));
+        getConfig().addDefault("links.website", java.util.List.of("&bWebsite: https://www.example.com"));
+        getConfig().addDefault("links.bans", java.util.List.of("&bBans: https://bans.example.com"));
+        getConfig().addDefault("links.vote", java.util.List.of("&eVote Links:", "", "https://vote.com", "https://vote.com", "https://vote.com", "https://vote.com", "", "&aVoting helps others find the server, and rewards you with $1000!"));
         getConfig().options().copyDefaults(true);
         saveConfig();
     }

@@ -49,3 +49,34 @@ webshop:
 blackjack:
   blackjack-payout-multiplier: "2.5"
   win-payout-multiplier: "2"
+rtp:
+  max-uses: 3
+  range: 5000
+  min-range: 0
+  # Optional center coordinates. If omitted, the world's spawn location is used.
+  # center:
+  #   x: 0
+  #   z: 0
+  messages:
+    no-permission: "&cYou do not have permission to use RTP."
+    no-uses-left: "&cYou have used all of your RTPs. Ask an admin if you would like more."
+    failed: "&cCould not find a safe RTP spot. Please try again later."
+    success: "&aTeleported randomly! &7RTP uses remaining: &e%remaining%&7. Ask an admin if you need more."
+    reset: "&aReset RTP uses for &e%player%&a."
+
+links:
+  discord:
+    - "&bDiscord: https://discord.example.com"
+  website:
+    - "&bWebsite: https://www.example.com"
+  bans:
+    - "&bBans: https://bans.example.com"
+  vote:
+    - "&eVote Links:"
+    - ""
+    - "https://vote.com"
+    - "https://vote.com"
+    - "https://vote.com"
+    - "https://vote.com"
+    - ""
+    - "&aVoting helps others find the server, and rewards you with $1000!"
