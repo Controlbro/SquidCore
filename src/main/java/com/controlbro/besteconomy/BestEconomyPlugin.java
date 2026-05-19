@@ -20,6 +20,13 @@ import com.controlbro.besteconomy.gui.SellCommand;
 import com.controlbro.besteconomy.gui.ShopCommand;
 import com.controlbro.besteconomy.gui.ShopGuiService;
 import com.controlbro.besteconomy.gui.ValuesCommand;
+import com.controlbro.besteconomy.home.DelHomeCommand;
+import com.controlbro.besteconomy.home.GiveHomesCommand;
+import com.controlbro.besteconomy.home.HomeCommand;
+import com.controlbro.besteconomy.home.HomeRespawnListener;
+import com.controlbro.besteconomy.home.HomeService;
+import com.controlbro.besteconomy.home.HomesCommand;
+import com.controlbro.besteconomy.home.SetHomeCommand;
 import com.controlbro.besteconomy.listener.PlayerJoinListener;
 import com.controlbro.besteconomy.links.LinkCommand;
 import com.controlbro.besteconomy.rtp.AgreeCommand;
@@ -80,6 +87,7 @@ public class BestEconomyPlugin extends JavaPlugin {
     private UserSettingsService userSettingsService;
     private SettingsMenuService settingsMenuService;
     private LockService lockService;
+    private HomeService homeService;
     private RtpService rtpService;
     private ShopAccountCommand registeredShopAccountCommand;
     private ScoreboardService scoreboardService;
@@ -114,6 +122,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         startCoinflip();
         startSettings();
         startLocks();
+        startHomes();
         startVisuals();
     }
 
@@ -145,6 +154,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         }
         if (lockService != null) {
             lockService.save();
+        }
+        if (homeService != null) {
+            homeService.save();
         }
         if (rtpService != null) {
             rtpService.save();
@@ -184,6 +196,10 @@ public class BestEconomyPlugin extends JavaPlugin {
             lockService.save();
             lockService = null;
         }
+        if (homeService != null) {
+            homeService.save();
+            homeService = null;
+        }
         if (rtpService != null) {
             rtpService.save();
             rtpService = null;
@@ -222,6 +238,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         startCoinflip();
         startSettings();
         startLocks();
+        startHomes();
         startVisuals();
     }
 
@@ -463,6 +480,41 @@ public class BestEconomyPlugin extends JavaPlugin {
         PluginCommand trustAll = getCommand("trustall");
         if (trustAll != null) {
             trustAll.setExecutor(new TrustAllCommand(lockService, messageManager));
+        }
+    }
+
+    private void startHomes() {
+        if (homeService != null) {
+            homeService.save();
+        }
+        homeService = new HomeService(this);
+        Bukkit.getPluginManager().registerEvents(new HomeRespawnListener(homeService), this);
+
+        PluginCommand setHome = getCommand("sethome");
+        if (setHome != null) {
+            setHome.setExecutor(new SetHomeCommand(homeService));
+        }
+        PluginCommand home = getCommand("home");
+        if (home != null) {
+            HomeCommand homeCommand = new HomeCommand(homeService);
+            home.setExecutor(homeCommand);
+            home.setTabCompleter(homeCommand);
+        }
+        PluginCommand homes = getCommand("homes");
+        if (homes != null) {
+            homes.setExecutor(new HomesCommand(homeService));
+        }
+        PluginCommand delHome = getCommand("delhome");
+        if (delHome != null) {
+            DelHomeCommand delHomeCommand = new DelHomeCommand(homeService);
+            delHome.setExecutor(delHomeCommand);
+            delHome.setTabCompleter(delHomeCommand);
+        }
+        PluginCommand giveHomes = getCommand("givehomes");
+        if (giveHomes != null) {
+            GiveHomesCommand giveHomesCommand = new GiveHomesCommand(homeService);
+            giveHomes.setExecutor(giveHomesCommand);
+            giveHomes.setTabCompleter(giveHomesCommand);
         }
     }
 

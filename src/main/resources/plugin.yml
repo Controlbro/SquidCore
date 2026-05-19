@@ -105,6 +105,21 @@ commands:
   vote:
     description: View the server vote links.
     usage: /vote
+  sethome:
+    description: Set a named home at your current location.
+    usage: /sethome [name]
+  home:
+    description: Teleport to one of your homes.
+    usage: /home [name]
+  homes:
+    description: List your homes and home slots.
+    usage: /homes
+  delhome:
+    description: Delete one of your homes.
+    usage: /delhome <name>
+  givehomes:
+    description: Grant additional home slots to a player.
+    usage: /givehomes <player> <amount>
 
 permissions:
   besteconomy.eco.give:
@@ -187,6 +202,13 @@ permissions:
     default: op
   besteconomy.onboarding.setspawn:
     description: Allows setting the onboarding spawnpoint.
+    default: op
+
+  besteconomy.home.use:
+    description: Allows players to use home commands.
+    default: true
+  besteconomy.home.give:
+    description: Allows granting extra home slots.
     default: op
 
   besteconomy.tab.prefix.owner:
