@@ -244,7 +244,7 @@ public class CoinflipService implements Listener {
         Component title = ColorUtil.colorize(color + "&l" + side.display().toUpperCase());
         String dots = ".".repeat((step % 3) + 1);
         Component creatorSubtitle = ColorUtil.colorize("&7Flipping" + dots + " &8(" + game.creatorSide.display() + ")");
-        Component challengerSubtitle = ColorUtil.colorize("&7Flipping" + dots + " &8(" + game.challengerSide().display() + ")");
+        Component challengerSubtitle = ColorUtil.colorize("&7Flipping" + dots + " &8(" + game.creatorSide.opposite().display() + ")");
         creator.showTitle(net.kyori.adventure.title.Title.title(title, creatorSubtitle));
         challenger.showTitle(net.kyori.adventure.title.Title.title(title, challengerSubtitle));
         creator.playSound(creator.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 0.8F, 0.8F + (step * 0.04F));
