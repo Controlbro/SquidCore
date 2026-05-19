@@ -1,6 +1,7 @@
 package com.controlbro.besteconomy.visual;
 
 import com.controlbro.besteconomy.placeholder.InternalPlaceholderService;
+import com.controlbro.besteconomy.rtp.RtpService;
 import com.controlbro.besteconomy.settings.UserSettingsService;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -28,13 +29,15 @@ public class ScoreboardService implements Listener {
     private final JavaPlugin plugin;
     private final InternalPlaceholderService placeholderService;
     private final UserSettingsService userSettingsService;
+    private final RtpService rtpService;
     private YamlConfiguration config;
     private BukkitTask updateTask;
 
-    public ScoreboardService(JavaPlugin plugin, InternalPlaceholderService placeholderService, UserSettingsService userSettingsService) {
+    public ScoreboardService(JavaPlugin plugin, InternalPlaceholderService placeholderService, UserSettingsService userSettingsService, RtpService rtpService) {
         this.plugin = plugin;
         this.placeholderService = placeholderService;
         this.userSettingsService = userSettingsService;
+        this.rtpService = rtpService;
         reload();
     }
 
@@ -85,6 +88,10 @@ public class ScoreboardService implements Listener {
     private void update(Player player) {
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         if (manager == null) {
+            return;
+        }
+        if (rtpService != null && !rtpService.hasAgreed(player)) {
+            player.setScoreboard(manager.getMainScoreboard());
             return;
         }
         if (userSettingsService != null && !userSettingsService.isScoreboardEnabled(player.getUniqueId())) {

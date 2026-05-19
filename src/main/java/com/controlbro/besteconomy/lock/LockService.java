@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.block.Container;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected;
@@ -27,15 +28,55 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class LockService implements Listener {
+    private final JavaPlugin plugin;
     private final MessageManager messageManager;
     private final File file;
     private final Map<String, LockEntry> locks = new HashMap<>();
     private final Set<UUID> lockMode = new HashSet<>();
+    private final Set<UUID> unlockMode = new HashSet<>();
+    private final Map<UUID, UUID> trustMode = new HashMap<>();
+    private final Map<UUID, Set<UUID>> globalTrust = new HashMap<>();
 
     public LockService(JavaPlugin plugin, MessageManager messageManager) {
+        this.plugin = plugin;
         this.messageManager = messageManager;
         this.file = new File(plugin.getDataFolder(), "locks.yml");
         load();
+    }
+
+    public void toggleUnlockMode(Player player) {
+        if (unlockMode.remove(player.getUniqueId())) {
+            messageManager.send(player, "lock.unlock-mode-disabled", null);
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0F, 0.8F);
+            return;
+        }
+        unlockMode.add(player.getUniqueId());
+        lockMode.remove(player.getUniqueId());
+        messageManager.send(player, "lock.unlock-mode-enabled", null);
+        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0F, 1.2F);
+    }
+
+    public boolean isTrustModeActive(Player player) {
+        return trustMode.containsKey(player.getUniqueId());
+    }
+
+    public boolean toggleTrustMode(Player player, UUID targetId, String targetName) {
+        if (trustMode.containsKey(player.getUniqueId())) {
+            trustMode.remove(player.getUniqueId());
+            messageManager.send(player, "lock.trust-mode-disabled", null);
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0F, 0.8F);
+            return false;
+        }
+        trustMode.put(player.getUniqueId(), targetId);
+        messageManager.send(player, "lock.trust-mode-enabled", Map.of("player", targetName));
+        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0F, 1.2F);
+        return true;
+    }
+
+    public void trustAll(Player player, UUID targetId, String targetName) {
+        globalTrust.computeIfAbsent(player.getUniqueId(), ignored -> new HashSet<>()).add(targetId);
+        save();
+        messageManager.send(player, "lock.trust-all-set", Map.of("player", targetName));
     }
 
     public void toggleLockMode(Player player) {
@@ -56,6 +97,11 @@ public class LockService implements Listener {
             ConfigurationSection section = root.createSection(entry.getKey());
             section.set("owner", entry.getValue().owner.toString());
             section.set("owner-name", entry.getValue().ownerName);
+            section.set("trusted", entry.getValue().trusted.stream().map(UUID::toString).toList());
+        }
+        ConfigurationSection globalTrustRoot = config.createSection("global-trust");
+        for (Map.Entry<UUID, Set<UUID>> entry : globalTrust.entrySet()) {
+            globalTrustRoot.set(entry.getKey().toString(), entry.getValue().stream().map(UUID::toString).toList());
         }
         try {
             config.save(file);
@@ -79,6 +125,22 @@ public class LockService implements Listener {
         }
         String key = key(block);
         LockEntry lock = locks.get(key);
+        UUID truster = trustMode.get(player.getUniqueId());
+        if (truster != null) {
+            event.setCancelled(true);
+            if (lock == null) {
+                messageManager.send(player, "lock.not-locked", null);
+                return;
+            }
+            if (!lock.owner.equals(player.getUniqueId()) && !player.hasPermission("besteconomy.lock.bypass")) {
+                messageManager.send(player, "lock.trust-not-owner", null);
+                return;
+            }
+            lock.trusted.add(truster);
+            save();
+            messageManager.send(player, "lock.trusted", Map.of("player", lockDisplayName(truster)));
+            return;
+        }
         if (lockMode.contains(player.getUniqueId())) {
             event.setCancelled(true);
             if (lock == null) {
@@ -95,7 +157,22 @@ public class LockService implements Listener {
             messageManager.send(player, "lock.already-locked", Map.of("owner", lock.ownerName));
             return;
         }
-        if (lock != null && !lock.owner.equals(player.getUniqueId()) && !player.hasPermission("besteconomy.lock.bypass")) {
+        if (unlockMode.contains(player.getUniqueId())) {
+            event.setCancelled(true);
+            if (lock == null) {
+                messageManager.send(player, "lock.not-locked", null);
+                return;
+            }
+            if (!lock.owner.equals(player.getUniqueId()) && !player.hasPermission("besteconomy.lock.bypass")) {
+                messageManager.send(player, "lock.trust-not-owner", null);
+                return;
+            }
+            locks.remove(key);
+            save();
+            messageManager.send(player, "lock.removed", null);
+            return;
+        }
+        if (lock != null && !lock.owner.equals(player.getUniqueId()) && !isTrusted(lock, player.getUniqueId()) && !player.hasPermission("besteconomy.lock.bypass")) {
             event.setCancelled(true);
             messageManager.send(player, "lock.no-access", Map.of("owner", lock.ownerName));
             player.playSound(player.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1.0F, 1.0F);
@@ -154,6 +231,14 @@ public class LockService implements Listener {
     }
 
     private Block canonicalBlock(Block block) {
+        if (block.getState() instanceof Chest chest && chest.getInventory().getHolder() instanceof org.bukkit.block.DoubleChest doubleChest) {
+            Location l1 = doubleChest.getLeftSide().getLocation();
+            Location l2 = doubleChest.getRightSide().getLocation();
+            if (l1.getBlockX() < l2.getBlockX() || (l1.getBlockX() == l2.getBlockX() && l1.getBlockZ() <= l2.getBlockZ())) {
+                return l1.getBlock();
+            }
+            return l2.getBlock();
+        }
         if (block.getBlockData() instanceof Bisected bisected && bisected.getHalf() == Bisected.Half.TOP) {
             return block.getRelative(BlockFace.DOWN);
         }
@@ -162,14 +247,13 @@ public class LockService implements Listener {
 
     private void load() {
         locks.clear();
+        globalTrust.clear();
         if (!file.exists()) {
             return;
         }
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
         ConfigurationSection root = config.getConfigurationSection("locks");
-        if (root == null) {
-            return;
-        }
+        if (root != null) {
         for (String key : root.getKeys(false)) {
             ConfigurationSection section = root.getConfigurationSection(key);
             if (section == null) {
@@ -180,13 +264,51 @@ public class LockService implements Listener {
                 continue;
             }
             try {
-                locks.put(key, new LockEntry(UUID.fromString(owner), section.getString("owner-name", "Unknown")));
+                LockEntry entry = new LockEntry(UUID.fromString(owner), section.getString("owner-name", "Unknown"));
+                for (String trusted : section.getStringList("trusted")) {
+                    try {
+                        entry.trusted.add(UUID.fromString(trusted));
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                }
+                locks.put(key, entry);
             } catch (IllegalArgumentException ignored) {
                 // ignored
             }
         }
+        }
+        ConfigurationSection trustRoot = config.getConfigurationSection("global-trust");
+        if (trustRoot == null) {
+            return;
+        }
+        for (String owner : trustRoot.getKeys(false)) {
+            try {
+                UUID ownerId = UUID.fromString(owner);
+                Set<UUID> trustedSet = new HashSet<>();
+                for (String trusted : trustRoot.getStringList(owner)) {
+                    try {
+                        trustedSet.add(UUID.fromString(trusted));
+                    } catch (IllegalArgumentException ignored) {
+                    }
+                }
+                globalTrust.put(ownerId, trustedSet);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
     }
 
-    private record LockEntry(UUID owner, String ownerName) {
+    private boolean isTrusted(LockEntry lock, UUID playerId) {
+        return lock.trusted.contains(playerId) || globalTrust.getOrDefault(lock.owner, Set.of()).contains(playerId);
+    }
+
+    private String lockDisplayName(UUID uuid) {
+        String name = plugin.getServer().getOfflinePlayer(uuid).getName();
+        return name == null ? uuid.toString() : name;
+    }
+
+    private record LockEntry(UUID owner, String ownerName, Set<UUID> trusted) {
+        private LockEntry(UUID owner, String ownerName) {
+            this(owner, ownerName, new HashSet<>());
+        }
     }
 }
