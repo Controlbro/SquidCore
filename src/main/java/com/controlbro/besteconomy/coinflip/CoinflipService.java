@@ -232,19 +232,21 @@ public class CoinflipService implements Listener {
                     return;
                 }
                 shownSide = shownSide.opposite();
-                showFlipFrame(currentCreator, currentChallenger, shownSide, ticks);
+                showFlipFrame(game, currentCreator, currentChallenger, shownSide, ticks);
                 ticks++;
             }
         };
         animationTasks.add(animation.runTaskTimer(plugin, 0L, 5L));
     }
 
-    private void showFlipFrame(Player creator, Player challenger, Side side, int step) {
+    private void showFlipFrame(CoinflipGame game, Player creator, Player challenger, Side side, int step) {
         String color = side == Side.HEADS ? "&6" : "&b";
         Component title = ColorUtil.colorize(color + "&l" + side.display().toUpperCase());
-        Component subtitle = ColorUtil.colorize("&7Flipping" + ".".repeat((step % 3) + 1));
-        creator.showTitle(net.kyori.adventure.title.Title.title(title, subtitle));
-        challenger.showTitle(net.kyori.adventure.title.Title.title(title, subtitle));
+        String dots = ".".repeat((step % 3) + 1);
+        Component creatorSubtitle = ColorUtil.colorize("&7Flipping" + dots + " &8(" + game.creatorSide.display() + ")");
+        Component challengerSubtitle = ColorUtil.colorize("&7Flipping" + dots + " &8(" + game.challengerSide().display() + ")");
+        creator.showTitle(net.kyori.adventure.title.Title.title(title, creatorSubtitle));
+        challenger.showTitle(net.kyori.adventure.title.Title.title(title, challengerSubtitle));
         creator.playSound(creator.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 0.8F, 0.8F + (step * 0.04F));
         challenger.playSound(challenger.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 0.8F, 0.8F + (step * 0.04F));
     }

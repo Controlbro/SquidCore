@@ -73,6 +73,12 @@ commands:
   resetrtp:
     description: Reset a player's RTP uses.
     usage: /resetrtp <player>
+  agree:
+    description: Accept onboarding and use your first RTP.
+    usage: /agree
+  setonboardingspawn:
+    description: Set the onboarding spawnpoint for new players.
+    usage: /setonboardingspawn
   discord:
     description: View the server Discord link.
     usage: /discord
@@ -162,6 +168,9 @@ permissions:
     default: true
   besteconomy.rtp.reset:
     description: Allows resetting a player's RTP uses.
+    default: op
+  besteconomy.onboarding.setspawn:
+    description: Allows setting the onboarding spawnpoint.
     default: op
 
   besteconomy.tab.prefix.owner:

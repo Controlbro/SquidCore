@@ -22,9 +22,11 @@ import com.controlbro.besteconomy.gui.ShopGuiService;
 import com.controlbro.besteconomy.gui.ValuesCommand;
 import com.controlbro.besteconomy.listener.PlayerJoinListener;
 import com.controlbro.besteconomy.links.LinkCommand;
+import com.controlbro.besteconomy.rtp.AgreeCommand;
 import com.controlbro.besteconomy.rtp.ResetRtpCommand;
 import com.controlbro.besteconomy.rtp.RtpCommand;
 import com.controlbro.besteconomy.rtp.RtpService;
+import com.controlbro.besteconomy.rtp.SetOnboardingSpawnCommand;
 import com.controlbro.besteconomy.lock.LockCommand;
 import com.controlbro.besteconomy.lock.LockService;
 import com.controlbro.besteconomy.market.GiveMarketSlotsCommand;
@@ -96,7 +98,7 @@ public class BestEconomyPlugin extends JavaPlugin {
 
         registerCommands();
         commandRegistrar.registerAll();
-        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(economyManager, messageManager), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this, economyManager, messageManager, rtpService), this);
         hookVault();
         startAutoSave();
         startShardRewardTask();
@@ -204,7 +206,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         commandRegistrar = new CurrencyCommandRegistrar(this, currencyManager, commandHandler);
         registerCommands();
         commandRegistrar.registerAll();
-        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(economyManager, messageManager), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this, economyManager, messageManager, rtpService), this);
         Bukkit.getOnlinePlayers().forEach(player -> economyManager.ensurePlayer(player.getUniqueId()));
         startAutoSave();
         startShardRewardTask();
@@ -298,6 +300,14 @@ public class BestEconomyPlugin extends JavaPlugin {
         PluginCommand rtp = getCommand("rtp");
         if (rtp != null) {
             rtp.setExecutor(new RtpCommand(rtpService));
+        }
+        PluginCommand agree = getCommand("agree");
+        if (agree != null) {
+            agree.setExecutor(new AgreeCommand(rtpService));
+        }
+        PluginCommand onboardingSpawn = getCommand("setonboardingspawn");
+        if (onboardingSpawn != null) {
+            onboardingSpawn.setExecutor(new SetOnboardingSpawnCommand(rtpService));
         }
         PluginCommand resetRtp = getCommand("resetrtp");
         if (resetRtp != null) {

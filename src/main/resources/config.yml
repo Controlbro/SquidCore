@@ -57,8 +57,19 @@ rtp:
   # center:
   #   x: 0
   #   z: 0
+
+  onboarding:
+    join-screen:
+      enabled: true
+      title: "&6Welcome to SheepSquid"
+      subtitle: "&7Please complete this simple tutorial before playing."
+      title-sound: "ENTITY_PLAYER_LEVELUP"
+      subtitle-sound: "BLOCK_NOTE_BLOCK_PLING"
   messages:
     no-permission: "&cYou do not have permission to use RTP."
+    must-agree: "&cYou must use &e/agree &cbefore you can use &e/rtp&c."
+    already-agreed: "&eYou already agreed. You can use &6/rtp &enormally."
+    agreed: "&aThanks for agreeing! Using your first RTP now..."
     no-uses-left: "&cYou have used all of your RTPs. Ask an admin if you would like more."
     failed: "&cCould not find a safe RTP spot. Please try again later."
     success: "&aTeleported randomly! &7RTP uses remaining: &e%remaining%&7. Ask an admin if you need more."

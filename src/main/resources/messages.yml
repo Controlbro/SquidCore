@@ -44,7 +44,7 @@ reload-complete: '&aConfiguration reloaded.'
 join:
   enabled: true
   message: '&8[&a+&8] &a{player} &7joined the server.'
-  first-time-message: '&8[&b+&8] &b{player} &7joined for the first time!'
+  first-time-message: '&8[&b+&8] &b{player} &7joined for the first time! &7Use &e/agree &7to begin onboarding.'
 
 usage-eco: '&eUsage: /{currency} <give|take|reset|pay|balance> ...'
 usage-pay: '&eUsage: /pay <player> <amount> or /shardpay <player> <amount>'
