@@ -232,8 +232,11 @@ public class LockService implements Listener {
 
     private Block canonicalBlock(Block block) {
         if (block.getState() instanceof Chest chest && chest.getInventory().getHolder() instanceof org.bukkit.block.DoubleChest doubleChest) {
-            Location l1 = doubleChest.getLeftSide().getLocation();
-            Location l2 = doubleChest.getRightSide().getLocation();
+            Location l1 = holderLocation(doubleChest.getLeftSide());
+            Location l2 = holderLocation(doubleChest.getRightSide());
+            if (l1 == null || l2 == null) {
+                return block;
+            }
             if (l1.getBlockX() < l2.getBlockX() || (l1.getBlockX() == l2.getBlockX() && l1.getBlockZ() <= l2.getBlockZ())) {
                 return l1.getBlock();
             }
@@ -243,6 +246,16 @@ public class LockService implements Listener {
             return block.getRelative(BlockFace.DOWN);
         }
         return block;
+    }
+
+    private Location holderLocation(InventoryHolder holder) {
+        if (holder instanceof BlockState state) {
+            return state.getLocation();
+        }
+        if (holder instanceof Entity entity) {
+            return entity.getLocation();
+        }
+        return null;
     }
 
     private void load() {
