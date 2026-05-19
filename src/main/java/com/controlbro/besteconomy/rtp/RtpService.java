@@ -75,6 +75,12 @@ public class RtpService {
         return agreedPlayers.contains(player.getUniqueId());
     }
 
+    public void resetAgreement(Player player) {
+        agreedPlayers.remove(player.getUniqueId());
+        uses.remove(player.getUniqueId());
+        save();
+    }
+
     private void rtpInternal(Player player) {
         if (!player.hasPermission("besteconomy.rtp.use")) {
             send(player, plugin.getConfig().getString("rtp.messages.no-permission", "&cYou do not have permission to use RTP."));

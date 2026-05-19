@@ -67,6 +67,16 @@ commands:
   lock:
     description: Toggle locking mode for containers and doors.
     usage: /lock
+
+  unlock:
+    description: Toggle unlocking mode for protections.
+    usage: /unlock
+  trust:
+    description: Trust a player on selected protections.
+    usage: /trust <player>
+  trustall:
+    description: Trust a player on all current and future protections.
+    usage: /trustall <player>
   rtp:
     description: Randomly teleport up to the configured use limit.
     usage: /rtp
@@ -79,6 +89,9 @@ commands:
   setonboardingspawn:
     description: Set the onboarding spawnpoint for new players.
     usage: /setonboardingspawn
+  onboardingtest:
+    description: Reset yourself into onboarding mode for testing.
+    usage: /onboardingtest
   discord:
     description: View the server Discord link.
     usage: /discord
@@ -162,6 +175,9 @@ permissions:
     default: true
   besteconomy.lock.bypass:
     description: Allows bypassing locked containers and doors.
+    default: op
+  besteconomy.onboarding.test:
+    description: Allows running onboarding test mode.
     default: op
   besteconomy.rtp.use:
     description: Allows using random teleport.

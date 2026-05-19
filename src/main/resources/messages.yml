@@ -87,6 +87,17 @@ lock:
   no-access: '&cThat is locked by &e{owner}&c.'
   no-break: '&cYou cannot break that because it is locked by &e{owner}&c.'
   removed: '&eRemoved lock because the locked block was broken.'
+  unlock-mode-enabled: '&aUnlock mode enabled. Right-click locked blocks you own to unlock. Run &e/unlock &aagain to exit.'
+  unlock-mode-disabled: '&cUnlock mode disabled.'
+  trust-mode-enabled: '&aTrust mode enabled for &e{player}&a. Right-click your locked blocks to trust them. Run &e/trust &aagain to exit.'
+  trust-mode-disabled: '&cTrust mode disabled.'
+  trust-not-owner: '&cYou can only manage trust or unlock locks you own.'
+  trusted: '&aTrusted &e{player} &aon that protection.'
+  trust-all-set: '&aTrusted &e{player} &aon all your protections, including future protections.'
+  trust-usage: '&eUsage: /trust <player> (or /trust again to exit mode)'
+  trustall-usage: '&eUsage: /trustall <player>'
+  cannot-trust-self: '&cYou cannot trust yourself.'
+  not-locked: '&eThat block is not locked.'
 
 mines:
   usage: '&eUsage: /mines <shards bet>'

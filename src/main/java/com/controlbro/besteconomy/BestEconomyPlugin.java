@@ -27,8 +27,12 @@ import com.controlbro.besteconomy.rtp.ResetRtpCommand;
 import com.controlbro.besteconomy.rtp.RtpCommand;
 import com.controlbro.besteconomy.rtp.RtpService;
 import com.controlbro.besteconomy.rtp.SetOnboardingSpawnCommand;
+import com.controlbro.besteconomy.rtp.OnboardingTestCommand;
 import com.controlbro.besteconomy.lock.LockCommand;
 import com.controlbro.besteconomy.lock.LockService;
+import com.controlbro.besteconomy.lock.TrustAllCommand;
+import com.controlbro.besteconomy.lock.TrustCommand;
+import com.controlbro.besteconomy.lock.UnlockCommand;
 import com.controlbro.besteconomy.market.GiveMarketSlotsCommand;
 import com.controlbro.besteconomy.market.MarketCommand;
 import com.controlbro.besteconomy.market.MarketService;
@@ -223,7 +227,7 @@ public class BestEconomyPlugin extends JavaPlugin {
 
     private void startVisuals() {
         stopVisuals();
-        scoreboardService = new ScoreboardService(this, placeholderService, userSettingsService);
+        scoreboardService = new ScoreboardService(this, placeholderService, userSettingsService, rtpService);
         tabListService = new TabListService(this, placeholderService);
         scoreboardService.start();
         tabListService.start();
@@ -308,6 +312,10 @@ public class BestEconomyPlugin extends JavaPlugin {
         PluginCommand onboardingSpawn = getCommand("setonboardingspawn");
         if (onboardingSpawn != null) {
             onboardingSpawn.setExecutor(new SetOnboardingSpawnCommand(rtpService));
+        }
+        PluginCommand onboardingTest = getCommand("onboardingtest");
+        if (onboardingTest != null) {
+            onboardingTest.setExecutor(new OnboardingTestCommand(rtpService));
         }
         PluginCommand resetRtp = getCommand("resetrtp");
         if (resetRtp != null) {
@@ -441,6 +449,20 @@ public class BestEconomyPlugin extends JavaPlugin {
         PluginCommand lock = getCommand("lock");
         if (lock != null) {
             lock.setExecutor(new LockCommand(lockService, messageManager));
+        }
+        PluginCommand unlock = getCommand("unlock");
+        if (unlock != null) {
+            unlock.setExecutor(new UnlockCommand(lockService, messageManager));
+        }
+        PluginCommand trust = getCommand("trust");
+        if (trust != null) {
+            TrustCommand trustCommand = new TrustCommand(lockService, messageManager);
+            trust.setExecutor(trustCommand);
+            trust.setTabCompleter(trustCommand);
+        }
+        PluginCommand trustAll = getCommand("trustall");
+        if (trustAll != null) {
+            trustAll.setExecutor(new TrustAllCommand(lockService, messageManager));
         }
     }
 
