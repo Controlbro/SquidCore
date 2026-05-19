@@ -4,8 +4,10 @@ import com.controlbro.besteconomy.util.ColorUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -27,6 +29,8 @@ public class RtpService {
     private final File file;
     private final Random random = new Random();
     private final Map<UUID, Integer> uses = new HashMap<>();
+    private final Set<UUID> agreedPlayers = new HashSet<>();
+    private Location onboardingSpawn;
 
     public RtpService(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -35,6 +39,43 @@ public class RtpService {
     }
 
     public void rtp(Player player) {
+        if (!hasAgreed(player)) {
+            send(player, plugin.getConfig().getString("rtp.messages.must-agree", "&cYou must use /agree before you can use /rtp."));
+            return;
+        }
+        rtpInternal(player);
+    }
+
+    public void agreeAndUseFirstRtp(Player player) {
+        if (hasAgreed(player)) {
+            send(player, plugin.getConfig().getString("rtp.messages.already-agreed", "&eYou already agreed. You can use /rtp normally."));
+            return;
+        }
+        agreedPlayers.add(player.getUniqueId());
+        save();
+        send(player, plugin.getConfig().getString("rtp.messages.agreed", "&aThanks for agreeing! Sending you to your first RTP now..."));
+        rtpInternal(player);
+    }
+
+    public void teleportToOnboardingSpawn(Player player) {
+        if (onboardingSpawn == null) {
+            return;
+        }
+        if (!hasAgreed(player)) {
+            player.teleport(onboardingSpawn);
+        }
+    }
+
+    public void setOnboardingSpawn(Location location) {
+        onboardingSpawn = location.clone();
+        save();
+    }
+
+    public boolean hasAgreed(Player player) {
+        return agreedPlayers.contains(player.getUniqueId());
+    }
+
+    private void rtpInternal(Player player) {
         if (!player.hasPermission("besteconomy.rtp.use")) {
             send(player, plugin.getConfig().getString("rtp.messages.no-permission", "&cYou do not have permission to use RTP."));
             return;
@@ -73,6 +114,15 @@ public class RtpService {
         ConfigurationSection root = config.createSection("uses");
         for (Map.Entry<UUID, Integer> entry : uses.entrySet()) {
             root.set(entry.getKey().toString(), entry.getValue());
+        }
+        config.set("agreed", agreedPlayers.stream().map(UUID::toString).toList());
+        if (onboardingSpawn != null) {
+            config.set("onboarding-spawn.world", onboardingSpawn.getWorld() == null ? null : onboardingSpawn.getWorld().getName());
+            config.set("onboarding-spawn.x", onboardingSpawn.getX());
+            config.set("onboarding-spawn.y", onboardingSpawn.getY());
+            config.set("onboarding-spawn.z", onboardingSpawn.getZ());
+            config.set("onboarding-spawn.yaw", onboardingSpawn.getYaw());
+            config.set("onboarding-spawn.pitch", onboardingSpawn.getPitch());
         }
         try {
             config.save(file);
@@ -143,20 +193,42 @@ public class RtpService {
 
     private void load() {
         uses.clear();
+        agreedPlayers.clear();
+        onboardingSpawn = null;
         if (!file.exists()) {
             return;
         }
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
         ConfigurationSection root = config.getConfigurationSection("uses");
-        if (root == null) {
-            return;
-        }
-        for (String key : root.getKeys(false)) {
+        if (root != null) {
+            for (String key : root.getKeys(false)) {
             try {
                 uses.put(UUID.fromString(key), Math.max(0, root.getInt(key, 0)));
             } catch (IllegalArgumentException ignored) {
                 // ignored
             }
+            }
+        }
+
+        for (String agreed : config.getStringList("agreed")) {
+            try {
+                agreedPlayers.add(UUID.fromString(agreed));
+            } catch (IllegalArgumentException ignored) {
+                // ignored
+            }
+        }
+        String worldName = config.getString("onboarding-spawn.world");
+        World world = worldName == null ? null : plugin.getServer().getWorld(worldName);
+        if (world != null) {
+            onboardingSpawn = new Location(
+                world,
+                config.getDouble("onboarding-spawn.x"),
+                config.getDouble("onboarding-spawn.y"),
+                config.getDouble("onboarding-spawn.z"),
+                (float) config.getDouble("onboarding-spawn.yaw"),
+                (float) config.getDouble("onboarding-spawn.pitch")
+            );
         }
     }
 }
+
