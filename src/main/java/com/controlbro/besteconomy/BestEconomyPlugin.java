@@ -23,6 +23,7 @@ import com.controlbro.besteconomy.gui.ValuesCommand;
 import com.controlbro.besteconomy.listener.PlayerJoinListener;
 import com.controlbro.besteconomy.links.LinkCommand;
 import com.controlbro.besteconomy.rtp.AgreeCommand;
+import com.controlbro.besteconomy.rtp.OnboardingTestCommand;
 import com.controlbro.besteconomy.rtp.ResetRtpCommand;
 import com.controlbro.besteconomy.rtp.RtpCommand;
 import com.controlbro.besteconomy.rtp.RtpService;
@@ -315,6 +316,10 @@ public class BestEconomyPlugin extends JavaPlugin {
             resetRtp.setExecutor(resetRtpCommand);
             resetRtp.setTabCompleter(resetRtpCommand);
         }
+        PluginCommand onboardingTest = getCommand("onboardingtest");
+        if (onboardingTest != null) {
+            onboardingTest.setExecutor(new OnboardingTestCommand(rtpService));
+        }
     }
 
     private void registerLinkCommands() {
@@ -438,9 +443,22 @@ public class BestEconomyPlugin extends JavaPlugin {
         }
         lockService = new LockService(this, messageManager);
         Bukkit.getPluginManager().registerEvents(lockService, this);
+        LockCommand lockCommand = new LockCommand(lockService, messageManager);
         PluginCommand lock = getCommand("lock");
         if (lock != null) {
-            lock.setExecutor(new LockCommand(lockService, messageManager));
+            lock.setExecutor(lockCommand);
+        }
+        PluginCommand unlock = getCommand("unlock");
+        if (unlock != null) {
+            unlock.setExecutor(lockCommand);
+        }
+        PluginCommand trust = getCommand("trust");
+        if (trust != null) {
+            trust.setExecutor(lockCommand);
+        }
+        PluginCommand trustall = getCommand("trustall");
+        if (trustall != null) {
+            trustall.setExecutor(lockCommand);
         }
     }
 

@@ -67,6 +67,15 @@ commands:
   lock:
     description: Toggle locking mode for containers and doors.
     usage: /lock
+  unlock:
+    description: Toggle unlock mode for your protections.
+    usage: /unlock
+  trust:
+    description: Enter trust mode for a player and click protections to trust them.
+    usage: /trust <player>
+  trustall:
+    description: Trust a player on all of your protections.
+    usage: /trustall <player>
   rtp:
     description: Randomly teleport up to the configured use limit.
     usage: /rtp
@@ -79,6 +88,9 @@ commands:
   setonboardingspawn:
     description: Set the onboarding spawnpoint for new players.
     usage: /setonboardingspawn
+  onboardingtest:
+    description: Reset yourself into onboarding flow for testing.
+    usage: /onboardingtest
   discord:
     description: View the server Discord link.
     usage: /discord
@@ -171,6 +183,9 @@ permissions:
     default: op
   besteconomy.onboarding.setspawn:
     description: Allows setting the onboarding spawnpoint.
+    default: op
+  besteconomy.onboarding.test:
+    description: Allows testing the onboarding flow as if you were new.
     default: op
 
   besteconomy.tab.prefix.owner:

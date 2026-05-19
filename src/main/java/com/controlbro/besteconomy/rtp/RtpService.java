@@ -75,6 +75,14 @@ public class RtpService {
         return agreedPlayers.contains(player.getUniqueId());
     }
 
+    public void runOnboardingTest(Player player) {
+        agreedPlayers.remove(player.getUniqueId());
+        uses.remove(player.getUniqueId());
+        save();
+        send(player, "&eOnboarding test started. You are now treated as a new player. Use &6/agree &eto continue.");
+        teleportToOnboardingSpawn(player);
+    }
+
     private void rtpInternal(Player player) {
         if (!player.hasPermission("besteconomy.rtp.use")) {
             send(player, plugin.getConfig().getString("rtp.messages.no-permission", "&cYou do not have permission to use RTP."));
