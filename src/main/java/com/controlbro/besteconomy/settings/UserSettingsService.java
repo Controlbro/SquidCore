@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class UserSettingsService {
+    private static final GameRule<Boolean> KEEP_INVENTORY_RULE = GameRule.getByName("keepInventory");
     private final JavaPlugin plugin;
     private final File file;
     private final Set<UUID> scoreboardDisabled = new HashSet<>();
@@ -63,7 +64,9 @@ public class UserSettingsService {
 
     public void applyWorldSettings() {
         for (World world : Bukkit.getWorlds()) {
-            world.setGameRule(GameRule.KEEP_INVENTORY, keepInventory);
+            if (KEEP_INVENTORY_RULE != null) {
+                world.setGameRule(KEEP_INVENTORY_RULE, keepInventory);
+            }
             world.setPVP(pvp);
         }
     }

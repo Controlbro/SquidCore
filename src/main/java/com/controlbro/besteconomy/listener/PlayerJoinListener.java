@@ -5,6 +5,9 @@ import com.controlbro.besteconomy.message.MessageManager;
 import com.controlbro.besteconomy.rtp.RtpService;
 import com.controlbro.besteconomy.util.ColorUtil;
 import net.kyori.adventure.text.Component;
+import java.util.Locale;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
@@ -69,7 +72,12 @@ public class PlayerJoinListener implements Listener {
             return fallback;
         }
         try {
-            return Sound.valueOf(value.toUpperCase());
+            NamespacedKey key = NamespacedKey.fromString(value.toLowerCase(Locale.ROOT));
+            if (key == null) {
+                return fallback;
+            }
+            Sound resolved = Registry.SOUNDS.get(key);
+            return resolved != null ? resolved : fallback;
         } catch (IllegalArgumentException ignored) {
             return fallback;
         }
