@@ -6,6 +6,7 @@ import com.controlbro.besteconomy.data.EconomyManager;
 import com.controlbro.besteconomy.message.MessageManager;
 import com.controlbro.besteconomy.util.ColorUtil;
 import com.controlbro.besteconomy.util.NumberUtil;
+import com.controlbro.besteconomy.util.DiscordWebhookNotifier;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -67,16 +68,18 @@ public class MarketService implements Listener {
     private final EconomyManager economyManager;
     private final CurrencyManager currencyManager;
     private final MessageManager messageManager;
+    private final DiscordWebhookNotifier webhookNotifier;
     private final File file;
     private final Map<UUID, MarketStall> stalls = new LinkedHashMap<>();
     private final Map<UUID, ChatInput> chatInputs = new HashMap<>();
     private final Set<UUID> suppressedMarketCloses = new HashSet<>();
 
-    public MarketService(JavaPlugin plugin, EconomyManager economyManager, CurrencyManager currencyManager, MessageManager messageManager) {
+    public MarketService(JavaPlugin plugin, EconomyManager economyManager, CurrencyManager currencyManager, MessageManager messageManager, DiscordWebhookNotifier webhookNotifier) {
         this.plugin = plugin;
         this.economyManager = economyManager;
         this.currencyManager = currencyManager;
         this.messageManager = messageManager;
+        this.webhookNotifier = webhookNotifier;
         this.file = new File(plugin.getDataFolder(), "market.yml");
         load();
     }
@@ -537,6 +540,7 @@ public class MarketService implements Listener {
         save();
         playDing(player);
         messageManager.send(player, "market.listing-created", null);
+        webhookNotifier.send("webhooks.market-listings", player.getName() + " listed " + displayName(listing.displayItem) + " for $" + NumberUtil.format(listing.price) + " (x" + listing.stackSize + ")");
         openListingManagement(player, listing);
     }
 
@@ -668,8 +672,7 @@ public class MarketService implements Listener {
     private List<MarketListing> searchableListings(MarketStall stall, String search) {
         String normalized = normalize(search);
         return sortedListings(stall).stream()
-            .filter(listing -> stockCount(listing) >= listing.stackSize)
-            .filter(listing -> normalized.isEmpty() || matches(listing.displayItem, normalized))
+                        .filter(listing -> normalized.isEmpty() || matches(listing.displayItem, normalized))
             .toList();
     }
 
@@ -722,8 +725,9 @@ public class MarketService implements Listener {
         lore.add(color("&8&m----------------"));
         lore.add(color("&7Price per stack: &a$" + NumberUtil.format(listing.price)));
         lore.add(color("&7Stack size: &e" + listing.stackSize));
-        lore.add(color("&7Stock: &e" + stockCount(listing)));
-        lore.add(color(management ? "&7Click to manage." : "&7Click to buy."));
+        int stock = stockCount(listing);
+        lore.add(color("&7Stock: " + (stock >= listing.stackSize ? "&a" + stock : "&cOut of stock")));
+        lore.add(color(management ? "&7Click to manage." : stock >= listing.stackSize ? "&7Click to buy." : "&cUnavailable until restocked."));
         meta.lore(lore);
         item.setItemMeta(meta);
         return item;

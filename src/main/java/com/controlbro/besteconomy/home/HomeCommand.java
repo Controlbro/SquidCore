@@ -12,9 +12,11 @@ import org.bukkit.entity.Player;
 
 public class HomeCommand implements CommandExecutor, TabCompleter {
     private final HomeService homeService;
+    private final com.controlbro.besteconomy.teleport.TeleportService teleportService;
 
-    public HomeCommand(HomeService homeService) {
+    public HomeCommand(HomeService homeService, com.controlbro.besteconomy.teleport.TeleportService teleportService) {
         this.homeService = homeService;
+        this.teleportService = teleportService;
     }
 
     @Override
@@ -33,6 +35,7 @@ public class HomeCommand implements CommandExecutor, TabCompleter {
             player.sendMessage(ChatColor.RED + "You do not have a home named '" + homeName.toLowerCase(Locale.ROOT) + "'.");
             return true;
         }
+        teleportService.rememberBack(player);
         player.teleport(home);
         player.sendMessage(ChatColor.GREEN + "Teleported to home '" + homeName.toLowerCase(Locale.ROOT) + "'.");
         return true;
