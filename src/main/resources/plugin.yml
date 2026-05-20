@@ -123,6 +123,21 @@ commands:
   givehomes:
     description: Grant additional home slots to a player.
     usage: /givehomes <player> <amount>
+  tpa:
+    description: Request to teleport to another player.
+    usage: /tpa <player>
+  tpahere:
+    description: Request another player teleport to you.
+    usage: /tpahere <player>
+  tpaccept:
+    description: Accept an incoming teleport request.
+    usage: /tpaccept
+  tpdeny:
+    description: Deny an incoming teleport request.
+    usage: /tpdeny
+  back:
+    description: Return to your previous teleport/death location.
+    usage: /back
 
 permissions:
   besteconomy.eco.give:

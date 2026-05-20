@@ -50,6 +50,12 @@ import com.controlbro.besteconomy.placeholder.InternalPlaceholderService;
 import com.controlbro.besteconomy.settings.SettingsCommand;
 import com.controlbro.besteconomy.settings.SettingsMenuService;
 import com.controlbro.besteconomy.settings.UserSettingsService;
+import com.controlbro.besteconomy.teleport.BackCommand;
+import com.controlbro.besteconomy.teleport.TeleportService;
+import com.controlbro.besteconomy.teleport.TpAcceptCommand;
+import com.controlbro.besteconomy.teleport.TpDenyCommand;
+import com.controlbro.besteconomy.teleport.TpaCommand;
+import com.controlbro.besteconomy.util.DiscordWebhookNotifier;
 import com.controlbro.besteconomy.shop.ShopAccountCommand;
 import com.controlbro.besteconomy.shop.ShopAccountService;
 import com.controlbro.besteconomy.shop.ShopAdminCommand;
@@ -90,6 +96,8 @@ public class BestEconomyPlugin extends JavaPlugin {
     private LockService lockService;
     private HomeService homeService;
     private RtpService rtpService;
+    private TeleportService teleportService;
+    private DiscordWebhookNotifier webhookNotifier;
     private ShopAccountCommand registeredShopAccountCommand;
     private ScoreboardService scoreboardService;
     private TabListService tabListService;
@@ -102,6 +110,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         saveDefaultConfig();
         ensureConfigDefaults();
         messageManager = new MessageManager(this);
+        webhookNotifier = new DiscordWebhookNotifier(this);
         currencyManager = new CurrencyManager(this);
         mySqlShardBalanceStore = new MySqlShardBalanceStore(this);
         economyManager = new EconomyManager(currencyManager, new DataStore(this), mySqlShardBalanceStore);
@@ -371,7 +380,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         PluginCommand shardShop = getCommand("shardshop");
         PluginCommand shardAnnounce = getCommand("shardannounce");
         if (shardAnnounce != null) {
-            shardAnnounce.setExecutor(new ShardAnnounceCommand());
+            shardAnnounce.setExecutor(new ShardAnnounceCommand(this));
         }
         if (shardShop != null) {
             ShopAccountCommand shopAccountCommand = new ShopAccountCommand(this, shopAccountService, messageManager);
@@ -393,7 +402,7 @@ public class BestEconomyPlugin extends JavaPlugin {
             HandlerList.unregisterAll(marketService);
             marketService.save();
         }
-        marketService = new MarketService(this, economyManager, currencyManager, messageManager);
+        marketService = new MarketService(this, economyManager, currencyManager, messageManager, webhookNotifier);
         Bukkit.getPluginManager().registerEvents(marketService, this);
         PluginCommand market = getCommand("market");
         if (market != null) {
@@ -499,6 +508,8 @@ public class BestEconomyPlugin extends JavaPlugin {
             homeService.save();
         }
         homeService = new HomeService(this);
+        teleportService = new TeleportService(this);
+        Bukkit.getPluginManager().registerEvents(teleportService, this);
         Bukkit.getPluginManager().registerEvents(new HomeRespawnListener(homeService), this);
 
         PluginCommand setHome = getCommand("sethome");
@@ -507,7 +518,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         }
         PluginCommand home = getCommand("home");
         if (home != null) {
-            HomeCommand homeCommand = new HomeCommand(homeService);
+            HomeCommand homeCommand = new HomeCommand(homeService, teleportService);
             home.setExecutor(homeCommand);
             home.setTabCompleter(homeCommand);
         }
@@ -521,7 +532,33 @@ public class BestEconomyPlugin extends JavaPlugin {
             delHome.setExecutor(delHomeCommand);
             delHome.setTabCompleter(delHomeCommand);
         }
-        PluginCommand giveHomes = getCommand("givehomes");
+
+        PluginCommand tpa = getCommand("tpa");
+        if (tpa != null) {
+            TpaCommand tpaCommand = new TpaCommand(teleportService, false);
+            tpa.setExecutor(tpaCommand);
+            tpa.setTabCompleter(tpaCommand);
+        }
+        PluginCommand tpaHere = getCommand("tpahere");
+        if (tpaHere != null) {
+            TpaCommand tpahereCommand = new TpaCommand(teleportService, true);
+            tpaHere.setExecutor(tpahereCommand);
+            tpaHere.setTabCompleter(tpahereCommand);
+        }
+        PluginCommand tpaccept = getCommand("tpaccept");
+        if (tpaccept != null) {
+            tpaccept.setExecutor(new TpAcceptCommand(teleportService));
+        }
+        PluginCommand tpdeny = getCommand("tpdeny");
+        if (tpdeny != null) {
+            tpdeny.setExecutor(new TpDenyCommand(teleportService));
+        }
+        PluginCommand back = getCommand("back");
+        if (back != null) {
+            back.setExecutor(new BackCommand(teleportService));
+        }
+
+                PluginCommand giveHomes = getCommand("givehomes");
         if (giveHomes != null) {
             GiveHomesCommand giveHomesCommand = new GiveHomesCommand(homeService);
             giveHomes.setExecutor(giveHomesCommand);
@@ -626,6 +663,8 @@ public class BestEconomyPlugin extends JavaPlugin {
         getConfig().addDefault("links.website", java.util.List.of("&bWebsite: https://www.example.com"));
         getConfig().addDefault("links.bans", java.util.List.of("&bBans: https://bans.example.com"));
         getConfig().addDefault("links.vote", java.util.List.of("&eVote Links:", "", "https://vote.com", "https://vote.com", "https://vote.com", "https://vote.com", "", "&aVoting helps others find the server, and rewards you with $1000!"));
+        getConfig().addDefault("webshop.shardannounce-format", "&#A855F7✦ &d{player} &fpurchased &d{item} &fwith their shards!");
+        getConfig().addDefault("webhooks.market-listings", "");
         getConfig().addDefault("auto-announcements.enabled", true);
         getConfig().addDefault("auto-announcements.min-seconds", 300);
         getConfig().addDefault("auto-announcements.max-seconds", 600);
