@@ -17,9 +17,11 @@ shop:
   sell-complete: '&aSold items for &e${amount}&a.'
   disabled: '&cThe webshop integration is not configured yet.'
   players-only: '&cOnly players can use this command.'
-  usage: '&eUsage: /shop resetpassword <newPassword>'
+  usage: '&eUsage: /shardshop [create|resetpassword <newPassword>]'
   admin-usage: '&eUsage: /shopadmin processpending'
   account-exists: '&eYour webshop account already exists. Login at https://shop.controlbro.com'
+  shop-link: '&dShard Shop: &fhttps://shop.controlbro.com'
+  create-instruction: '&7To create an account, use &d/shardshop create&7.'
   password-prompt: '&eType your new webshop password in chat. &cIt will be hidden
     from public chat.'
   password-cancelled: '&cPassword setup cancelled because you left the server.'
@@ -139,6 +141,8 @@ coinflip:
   announce-win: '&6&lCoinflip &8» &e{winner} &awon &5✦{amount} &awith &6{side} &7against {loser}&a!'
   cancelled: '&cYour coinflip was cancelled and all bets were refunded.'
   cancelled-offline: '&cYour coinflip was cancelled because a player went offline. All bets were refunded.'
+  expired-open: '&cYour coinflip expired after 2 minutes with no joiner. Bets were refunded.'
+  expired-pick: '&cYour coinflip expired because no side was chosen within 2 minutes. Bets were refunded.'
   list-header: '&6&lOpen Coinflips:'
   list-entry: '&8- &e{player} &7for &5✦{bet} &8(/coinflip join {player})'
 

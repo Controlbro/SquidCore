@@ -40,6 +40,11 @@ public class ShopAccountCommand implements CommandExecutor, TabCompleter, Listen
             return true;
         }
         if (args.length == 0) {
+            messageManager.send(player, "shop.shop-link", null);
+            messageManager.send(player, "shop.create-instruction", null);
+            return true;
+        }
+        if (args.length == 1 && args[0].equalsIgnoreCase("create")) {
             startAccountSetup(player);
             return true;
         }
@@ -48,6 +53,7 @@ public class ShopAccountCommand implements CommandExecutor, TabCompleter, Listen
             return true;
         }
         messageManager.send(player, "shop.usage", null);
+        messageManager.send(player, "shop.create-instruction", null);
         return true;
     }
 
@@ -107,7 +113,7 @@ public class ShopAccountCommand implements CommandExecutor, TabCompleter, Listen
     @Override
     public java.util.List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1 && sender.hasPermission("shop.account.reset")) {
-            return java.util.List.of("resetpassword");
+            return java.util.List.of("create", "resetpassword");
         }
         return java.util.List.of();
     }
