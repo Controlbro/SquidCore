@@ -30,8 +30,11 @@ commands:
     description: BestEconomy admin command.
     usage: /besteconomy reload
   shardshop:
-    description: Create or manage your Shards webshop account.
-    usage: /shardshop [resetpassword <newPassword>]
+    description: View or create your Shards webshop account.
+    usage: /shardshop [create|resetpassword <newPassword>]
+  shardannounce:
+    description: Broadcast a custom shard shop purchase announcement.
+    usage: /shardannounce <player> <item>
   shop:
     description: Open the Money GUI shop.
     usage: /shop

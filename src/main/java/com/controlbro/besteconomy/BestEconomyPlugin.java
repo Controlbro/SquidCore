@@ -55,6 +55,7 @@ import com.controlbro.besteconomy.shop.ShopAccountService;
 import com.controlbro.besteconomy.shop.ShopAdminCommand;
 import com.controlbro.besteconomy.shop.ShopDatabaseManager;
 import com.controlbro.besteconomy.shop.ShopPendingCommandService;
+import com.controlbro.besteconomy.shop.ShardAnnounceCommand;
 import com.controlbro.besteconomy.shop.ShopTables;
 import com.controlbro.besteconomy.vault.VaultEconomyProvider;
 import com.controlbro.besteconomy.visual.ScoreboardService;
@@ -94,6 +95,7 @@ public class BestEconomyPlugin extends JavaPlugin {
     private TabListService tabListService;
     private BukkitTask autosaveTask;
     private BukkitTask shardRewardTask;
+    private BukkitTask autoAnnounceTask;
 
     @Override
     public void onEnable() {
@@ -114,6 +116,8 @@ public class BestEconomyPlugin extends JavaPlugin {
         hookVault();
         startAutoSave();
         startShardRewardTask();
+        startAutoAnnouncements();
+        startAutoAnnouncements();
         startWebshopIntegration();
         startShopGui();
         startMarket();
@@ -133,6 +137,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         }
         if (shardRewardTask != null) {
             shardRewardTask.cancel();
+        }
+        if (autoAnnounceTask != null) {
+            autoAnnounceTask.cancel();
         }
         if (shopPendingCommandService != null) {
             shopPendingCommandService.stop();
@@ -362,6 +369,10 @@ public class BestEconomyPlugin extends JavaPlugin {
             return;
         }
         PluginCommand shardShop = getCommand("shardshop");
+        PluginCommand shardAnnounce = getCommand("shardannounce");
+        if (shardAnnounce != null) {
+            shardAnnounce.setExecutor(new ShardAnnounceCommand());
+        }
         if (shardShop != null) {
             ShopAccountCommand shopAccountCommand = new ShopAccountCommand(this, shopAccountService, messageManager);
             shardShop.setExecutor(shopAccountCommand);
@@ -615,6 +626,10 @@ public class BestEconomyPlugin extends JavaPlugin {
         getConfig().addDefault("links.website", java.util.List.of("&bWebsite: https://www.example.com"));
         getConfig().addDefault("links.bans", java.util.List.of("&bBans: https://bans.example.com"));
         getConfig().addDefault("links.vote", java.util.List.of("&eVote Links:", "", "https://vote.com", "https://vote.com", "https://vote.com", "https://vote.com", "", "&aVoting helps others find the server, and rewards you with $1000!"));
+        getConfig().addDefault("auto-announcements.enabled", true);
+        getConfig().addDefault("auto-announcements.min-seconds", 300);
+        getConfig().addDefault("auto-announcements.max-seconds", 600);
+        getConfig().addDefault("auto-announcements.lines", java.util.List.of("&d✦ &fSpend your shards at &d/shardshop&f.", "&d✦ &fJoin our Discord with &d/discord&f.", "&d✦ &fVote for rewards using &d/vote&f.", "&d✦ &fVisit our website at &d/website&f."));
         getConfig().options().copyDefaults(true);
         saveConfig();
     }
@@ -636,6 +651,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         if (shardRewardTask != null) {
             shardRewardTask.cancel();
         }
+        if (autoAnnounceTask != null) {
+            autoAnnounceTask.cancel();
+        }
         if (!getConfig().getBoolean("online-shard-reward.enabled", true)) {
             return;
         }
@@ -653,6 +671,35 @@ public class BestEconomyPlugin extends JavaPlugin {
             Bukkit.getOnlinePlayers().forEach(player ->
                 economyManager.addBalance(player.getUniqueId(), shardCurrency, rewardAmount)),
             intervalSeconds * 20L, intervalSeconds * 20L);
+    }
+
+
+    private void startAutoAnnouncements() {
+        if (autoAnnounceTask != null) {
+            autoAnnounceTask.cancel();
+        }
+        if (!getConfig().getBoolean("auto-announcements.enabled", true)) {
+            return;
+        }
+        scheduleAutoAnnouncement();
+    }
+
+    private void scheduleAutoAnnouncement() {
+        long minSeconds = getConfig().getLong("auto-announcements.min-seconds", 300);
+        long maxSeconds = getConfig().getLong("auto-announcements.max-seconds", 600);
+        if (minSeconds <= 0) {
+            minSeconds = 300;
+        }
+        if (maxSeconds < minSeconds) {
+            maxSeconds = minSeconds;
+        }
+        long delaySeconds = minSeconds == maxSeconds ? minSeconds : java.util.concurrent.ThreadLocalRandom.current().nextLong(minSeconds, maxSeconds + 1);
+        autoAnnounceTask = Bukkit.getScheduler().runTaskLater(this, () -> {
+            for (String line : getConfig().getStringList("auto-announcements.lines")) {
+                Bukkit.broadcast(com.controlbro.besteconomy.util.ColorUtil.colorize(line));
+            }
+            scheduleAutoAnnouncement();
+        }, delaySeconds * 20L);
     }
 
     private void hookVault() {
