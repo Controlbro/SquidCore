@@ -1,6 +1,6 @@
-name: BestEconomy
+name: SquidCore
 main: com.controlbro.besteconomy.BestEconomyPlugin
-version: 1.0.6
+version: 2.7
 api-version: '26.1.2'
 author: Controlbro
 softdepend: [Vault]
@@ -67,6 +67,9 @@ commands:
   settings:
     description: Open the server settings menu.
     usage: /settings
+  tags:
+    description: Open the chat tags GUI.
+    usage: /tags
   lock:
     description: Toggle locking mode for containers and doors.
     usage: /lock
