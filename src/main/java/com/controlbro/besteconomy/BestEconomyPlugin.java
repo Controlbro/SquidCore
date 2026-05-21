@@ -4,6 +4,8 @@ import com.controlbro.besteconomy.blackjack.BlackjackCommand;
 import com.controlbro.besteconomy.blackjack.BlackjackService;
 import com.controlbro.besteconomy.coinflip.CoinflipCommand;
 import com.controlbro.besteconomy.coinflip.CoinflipService;
+import com.controlbro.besteconomy.chat.ChatService;
+import com.controlbro.besteconomy.chat.TagsCommand;
 import com.controlbro.besteconomy.command.BaltopCommand;
 import com.controlbro.besteconomy.command.BalanceCommand;
 import com.controlbro.besteconomy.command.CurrencyCommandHandler;
@@ -104,6 +106,7 @@ public class BestEconomyPlugin extends JavaPlugin {
     private BukkitTask autosaveTask;
     private BukkitTask shardRewardTask;
     private BukkitTask autoAnnounceTask;
+    private ChatService chatService;
 
     @Override
     public void onEnable() {
@@ -137,6 +140,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         startLocks();
         startHomes();
         startVisuals();
+        startChat();
     }
 
     @Override
@@ -476,6 +480,21 @@ public class BestEconomyPlugin extends JavaPlugin {
         }
     }
 
+
+    private void startChat() {
+        if (chatService != null) {
+            HandlerList.unregisterAll(chatService);
+        }
+        chatService = new ChatService(this);
+        Bukkit.getPluginManager().registerEvents(chatService, this);
+        PluginCommand tags = getCommand("tags");
+        if (tags != null) {
+            TagsCommand tagsCommand = new TagsCommand(chatService);
+            tags.setExecutor(tagsCommand);
+            Bukkit.getPluginManager().registerEvents(tagsCommand, this);
+        }
+    }
+
     private void startLocks() {
         if (lockService != null) {
             HandlerList.unregisterAll(lockService);
@@ -667,8 +686,12 @@ public class BestEconomyPlugin extends JavaPlugin {
         getConfig().addDefault("webhooks.market-listings", "");
         getConfig().addDefault("auto-announcements.enabled", true);
         getConfig().addDefault("auto-announcements.min-seconds", 300);
-        getConfig().addDefault("auto-announcements.max-seconds", 600);
+        getConfig().addDefault("auto-announcements.max-seconds", 480);
         getConfig().addDefault("auto-announcements.lines", java.util.List.of("&d✦ &fSpend your shards at &d/shardshop&f.", "&d✦ &fJoin our Discord with &d/discord&f.", "&d✦ &fVote for rewards using &d/vote&f.", "&d✦ &fVisit our website at &d/website&f."));
+        getConfig().addDefault("chat.format", "{luckperms_prefix}&r{username}{tag} &7>> &f{message}");
+        getConfig().addDefault("chat.fallback-prefix", "");
+        getConfig().addDefault("chat.tags.member.display", "&7[Member]");
+        getConfig().addDefault("chat.tags.member.permission", "besteconomy.tags.member");
         getConfig().options().copyDefaults(true);
         saveConfig();
     }
@@ -734,8 +757,10 @@ public class BestEconomyPlugin extends JavaPlugin {
         }
         long delaySeconds = minSeconds == maxSeconds ? minSeconds : java.util.concurrent.ThreadLocalRandom.current().nextLong(minSeconds, maxSeconds + 1);
         autoAnnounceTask = Bukkit.getScheduler().runTaskLater(this, () -> {
-            for (String line : getConfig().getStringList("auto-announcements.lines")) {
-                Bukkit.broadcast(com.controlbro.besteconomy.util.ColorUtil.colorize(line));
+            java.util.List<String> lines = getConfig().getStringList("auto-announcements.lines");
+            if (!lines.isEmpty()) {
+                int index = java.util.concurrent.ThreadLocalRandom.current().nextInt(lines.size());
+                Bukkit.broadcast(com.controlbro.besteconomy.util.ColorUtil.colorize(lines.get(index)));
             }
             scheduleAutoAnnouncement();
         }, delaySeconds * 20L);
