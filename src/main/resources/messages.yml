@@ -42,6 +42,11 @@ insufficient-funds: '&cYou do not have enough &5Shards&c.'
 max-money-reached: '&cThat player has reached the maximum &aMoney &cbalance.'
 min-money-reached: '&cYou cannot go below the minimum &aMoney &cbalance.'
 reload-complete: '&aConfiguration reloaded.'
+usage-reload: '&eUsage: /{command} reload'
+players-only: '&cOnly players can use this command.'
+bugreport:
+  usage: '&eUsage: /bugreport <bug text>'
+  sent: '&aThanks! Your bug report has been sent to staff.'
 
 join:
   enabled: true
@@ -68,7 +73,7 @@ eco:
   give: '&aYou gave &5{symbol}&a{amount} &5Shards &ato {player}.'
   take: '&cYou took &5{symbol}&c{amount} &5Shards &cfrom {player}.'
   reset: '&eYou reset {player}''s &5Shards &ebalance.'
-  received: '&aYou received &5{symbol}&a{amount} &5Shards&a.'
+  received: '&aYou received {coloredsymbol}&a{amount} {currency}&a.'
 
 pay:
   sent: '&aYou paid {player} {coloredsymbol}&a{amount} {currency}&a.'

@@ -8,6 +8,7 @@ import com.controlbro.besteconomy.chat.ChatService;
 import com.controlbro.besteconomy.chat.TagsCommand;
 import com.controlbro.besteconomy.command.BaltopCommand;
 import com.controlbro.besteconomy.command.BalanceCommand;
+import com.controlbro.besteconomy.command.BugReportCommand;
 import com.controlbro.besteconomy.command.CurrencyCommandHandler;
 import com.controlbro.besteconomy.command.CurrencyCommandRegistrar;
 import com.controlbro.besteconomy.command.EcoCommand;
@@ -125,6 +126,17 @@ public class BestEconomyPlugin extends JavaPlugin {
         registerCommands();
         commandRegistrar.registerAll();
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this, economyManager, messageManager, rtpService), this);
+        Bukkit.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void onJoin(org.bukkit.event.player.PlayerJoinEvent event) {
+                placeholderService.startSession(event.getPlayer());
+            }
+
+            @org.bukkit.event.EventHandler
+            public void onQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+                placeholderService.endSession(event.getPlayer());
+            }
+        }, this);
         hookVault();
         startAutoSave();
         startShardRewardTask();
@@ -247,6 +259,17 @@ public class BestEconomyPlugin extends JavaPlugin {
         registerCommands();
         commandRegistrar.registerAll();
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this, economyManager, messageManager, rtpService), this);
+        Bukkit.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void onJoin(org.bukkit.event.player.PlayerJoinEvent event) {
+                placeholderService.startSession(event.getPlayer());
+            }
+
+            @org.bukkit.event.EventHandler
+            public void onQuit(org.bukkit.event.player.PlayerQuitEvent event) {
+                placeholderService.endSession(event.getPlayer());
+            }
+        }, this);
         Bukkit.getOnlinePlayers().forEach(player -> economyManager.ensurePlayer(player.getUniqueId()));
         startAutoSave();
         startShardRewardTask();
@@ -325,9 +348,13 @@ public class BestEconomyPlugin extends JavaPlugin {
             shardtop.setExecutor(shardTopCommand);
             shardtop.setTabCompleter(shardTopCommand);
         }
-        PluginCommand reload = getCommand("besteconomy");
+        PluginCommand reload = getCommand("sheepsquid");
         if (reload != null) {
             reload.setExecutor(new ReloadCommand(this, messageManager));
+        }
+        PluginCommand bugReport = getCommand("bugreport");
+        if (bugReport != null) {
+            bugReport.setExecutor(new BugReportCommand(webhookNotifier, messageManager));
         }
         registerRtpCommands();
         registerLinkCommands();
@@ -684,6 +711,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         getConfig().addDefault("links.vote", java.util.List.of("&eVote Links:", "", "https://vote.com", "https://vote.com", "https://vote.com", "https://vote.com", "", "&aVoting helps others find the server, and rewards you with $1000!"));
         getConfig().addDefault("webshop.shardannounce-format", "&#A855F7✦ &d{player} &fpurchased &d{item} &fwith their shards!");
         getConfig().addDefault("webhooks.market-listings", "");
+        getConfig().addDefault("webhooks.bug-reports", "");
         getConfig().addDefault("auto-announcements.enabled", true);
         getConfig().addDefault("auto-announcements.min-seconds", 300);
         getConfig().addDefault("auto-announcements.max-seconds", 480);

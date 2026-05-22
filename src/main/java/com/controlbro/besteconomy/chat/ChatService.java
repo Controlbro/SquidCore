@@ -9,7 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -26,10 +27,11 @@ public class ChatService implements Listener {
     public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         String format = plugin.getConfig().getString("chat.format", "{luckperms_prefix}&r{username}{tag} &7>> &f{message}");
-        String message = PlainTextComponentSerializer.plainText().serialize(event.message());
+        String message = LegacyComponentSerializer.legacySection().serialize(event.message());
         String rendered = format.replace("{luckperms_prefix}", resolvePrefix(player)).replace("{username}", player.getName()).replace("{tag}", renderTag(player)).replace("{message}", message);
+        Component formatted = ColorUtil.colorize(rendered);
         event.setCancelled(true);
-        Bukkit.broadcast(ColorUtil.colorize(rendered));
+        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.broadcast(formatted));
     }
 
     public List<TagOption> availableTags(Player player) {
