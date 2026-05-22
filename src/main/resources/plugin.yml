@@ -26,9 +26,12 @@ commands:
   shardpay:
     description: Pay another player Shards.
     usage: /shardpay <player> <amount>
-  besteconomy:
-    description: BestEconomy admin command.
-    usage: /besteconomy reload
+  sheepsquid:
+    description: SheepSquid admin command.
+    usage: /sheepsquid reload
+  bugreport:
+    description: Send a bug report to staff via Discord webhook.
+    usage: /bugreport <bug text>
   shardshop:
     description: View or create your Shards webshop account.
     usage: /shardshop [create|resetpassword <newPassword>]

@@ -91,3 +91,6 @@ links:
     - "https://vote.com"
     - ""
     - "&aVoting helps others find the server, and rewards you with $1000!"
+
+webhooks:
+  bug-reports: ""

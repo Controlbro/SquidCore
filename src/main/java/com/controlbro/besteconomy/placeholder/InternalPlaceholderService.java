@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.command.CommandSender;
@@ -17,6 +18,7 @@ import org.bukkit.entity.Player;
 public class InternalPlaceholderService {
     private final EconomyManager economyManager;
     private final CurrencyManager currencyManager;
+    private final Map<UUID, Long> sessionStartTimes = new HashMap<>();
 
     public InternalPlaceholderService(EconomyManager economyManager, CurrencyManager currencyManager) {
         this.economyManager = economyManager;
@@ -46,6 +48,7 @@ public class InternalPlaceholderService {
         String shards = formattedBalance(player, "shards");
         String playtime = formattedPlaytime(player);
         String ping = String.valueOf(ping(player));
+        String sessionTime = formattedSessionTime(player);
         placeholders.put("player", player.getName());
         placeholders.put("Player", player.getName());
         placeholders.put("money", money);
@@ -56,6 +59,9 @@ public class InternalPlaceholderService {
         placeholders.put("Playtime", playtime);
         placeholders.put("ping", ping);
         placeholders.put("Ping", ping);
+        placeholders.put("session_time", sessionTime);
+        placeholders.put("sessiontime", sessionTime);
+        placeholders.put("SessionTime", sessionTime);
         return placeholders;
     }
 
@@ -110,6 +116,24 @@ public class InternalPlaceholderService {
             }
         }
         throw new IllegalStateException("No Bukkit playtime statistic is available.");
+    }
+
+    public void startSession(Player player) {
+        sessionStartTimes.put(player.getUniqueId(), System.currentTimeMillis());
+    }
+
+    public void endSession(Player player) {
+        sessionStartTimes.remove(player.getUniqueId());
+    }
+
+    private String formattedSessionTime(Player player) {
+        long now = System.currentTimeMillis();
+        long start = sessionStartTimes.computeIfAbsent(player.getUniqueId(), ignored -> now);
+        long elapsedSeconds = Math.max(0L, (now - start) / 1000L);
+        long hours = elapsedSeconds / 3600L;
+        long minutes = (elapsedSeconds % 3600L) / 60L;
+        long seconds = elapsedSeconds % 60L;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
     private int ping(Player player) {
