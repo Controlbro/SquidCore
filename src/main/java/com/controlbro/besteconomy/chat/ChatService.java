@@ -25,6 +25,9 @@ public class ChatService implements Listener {
 
     @EventHandler
     public void onChat(AsyncChatEvent event) {
+        if (!plugin.getConfig().getBoolean("chat.formatting-enabled", true)) {
+            return;
+        }
         Player player = event.getPlayer();
         String format = plugin.getConfig().getString("chat.format", "{luckperms_prefix}&r{username}{tag} &7>> &f{message}");
         String message = LegacyComponentSerializer.legacySection().serialize(event.message());
@@ -51,6 +54,10 @@ public class ChatService implements Listener {
     public void setTag(Player player, String key) { selectedTags.put(player.getUniqueId(), key); }
 
     private String resolvePrefix(Player player) { return plugin.getConfig().getString("chat.fallback-prefix", ""); }
+
+    public String renderedTag(Player player) {
+        return renderTag(player).trim();
+    }
 
     private String renderTag(Player player) {
         String key = selectedTags.get(player.getUniqueId());

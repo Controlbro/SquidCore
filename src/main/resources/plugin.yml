@@ -3,7 +3,7 @@ main: com.controlbro.besteconomy.BestEconomyPlugin
 version: 2.7
 api-version: '26.1.2'
 author: Controlbro
-softdepend: [Vault]
+softdepend: [Vault, PlaceholderAPI]
 
 commands:
   eco:
@@ -73,6 +73,9 @@ commands:
   tags:
     description: Open the chat tags GUI.
     usage: /tags
+  vanish:
+    description: Toggle invisibility from other players and the tab list.
+    usage: /vanish
   lock:
     description: Toggle locking mode for containers and doors.
     usage: /lock
@@ -209,6 +212,12 @@ permissions:
   besteconomy.settings.use:
     description: Allows opening the settings menu.
     default: true
+  besteconomy.vanish.use:
+    description: Allows toggling vanish.
+    default: op
+  besteconomy.vanish.see:
+    description: Allows seeing vanished and spectator players.
+    default: op
   besteconomy.lock.use:
     description: Allows locking containers and doors.
     default: true

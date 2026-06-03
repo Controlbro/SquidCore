@@ -93,4 +93,14 @@ links:
     - "&aVoting helps others find the server, and rewards you with $1000!"
 
 webhooks:
+  market-listings: ""
   bug-reports: ""
+
+chat:
+  formatting-enabled: true
+  format: "{luckperms_prefix}&r{username}{tag} &7>> &f{message}"
+  fallback-prefix: ""
+  tags:
+    member:
+      display: "&7[Member]"
+      permission: "besteconomy.tags.member"
