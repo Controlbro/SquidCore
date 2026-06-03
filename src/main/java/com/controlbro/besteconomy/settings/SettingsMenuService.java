@@ -22,9 +22,10 @@ import org.bukkit.scoreboard.ScoreboardManager;
 
 public class SettingsMenuService implements Listener {
     private static final int SIZE = 27;
-    private static final int SCOREBOARD_SLOT = 11;
-    private static final int KEEP_INVENTORY_SLOT = 13;
-    private static final int PVP_SLOT = 15;
+    private static final int SCOREBOARD_SLOT = 10;
+    private static final int AUTO_LOCK_SLOT = 12;
+    private static final int KEEP_INVENTORY_SLOT = 14;
+    private static final int PVP_SLOT = 16;
     private final UserSettingsService userSettingsService;
     private final MessageManager messageManager;
 
@@ -47,6 +48,10 @@ public class SettingsMenuService implements Listener {
         inventory.setItem(SCOREBOARD_SLOT, item(Material.MAP, "&aScoreboard", List.of(
             "&7Status: " + status(userSettingsService.isScoreboardEnabled(player.getUniqueId())),
             "&7Click to toggle your scoreboard.")));
+        inventory.setItem(AUTO_LOCK_SLOT, item(Material.CHEST, "&6Auto Lock", List.of(
+            "&7Status: " + status(userSettingsService.isAutoLockEnabled(player.getUniqueId())),
+            "&7Automatically lock chests, doors, trapdoors,",
+            "&7and other lockable blocks you place.")));
         inventory.setItem(KEEP_INVENTORY_SLOT, item(Material.TOTEM_OF_UNDYING, "&eKeep Inventory", List.of(
             "&7Status: " + status(userSettingsService.isKeepInventory()),
             "&7Click to toggle keep inventory.")));
@@ -73,6 +78,13 @@ public class SettingsMenuService implements Listener {
             }
             messageManager.send(player, "settings.scoreboard", Map.of("status", enabled ? "enabled" : "disabled"));
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0F, 1.2F);
+            open(player);
+            return;
+        }
+        if (slot == AUTO_LOCK_SLOT) {
+            boolean enabled = userSettingsService.toggleAutoLock(player.getUniqueId());
+            messageManager.send(player, "settings.auto-lock", Map.of("status", enabled ? "enabled" : "disabled"));
+            playToggle(player);
             open(player);
             return;
         }

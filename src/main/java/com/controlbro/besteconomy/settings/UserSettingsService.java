@@ -16,6 +16,7 @@ public class UserSettingsService {
     private final JavaPlugin plugin;
     private final File file;
     private final Set<UUID> scoreboardDisabled = new HashSet<>();
+    private final Set<UUID> autoLockDisabled = new HashSet<>();
     private boolean keepInventory;
     private boolean pvp;
 
@@ -36,6 +37,20 @@ public class UserSettingsService {
             return true;
         }
         scoreboardDisabled.add(uuid);
+        save();
+        return false;
+    }
+
+    public boolean isAutoLockEnabled(UUID uuid) {
+        return !autoLockDisabled.contains(uuid);
+    }
+
+    public boolean toggleAutoLock(UUID uuid) {
+        if (autoLockDisabled.remove(uuid)) {
+            save();
+            return true;
+        }
+        autoLockDisabled.add(uuid);
         save();
         return false;
     }
@@ -76,6 +91,7 @@ public class UserSettingsService {
         config.set("keep-inventory", keepInventory);
         config.set("pvp", pvp);
         config.set("scoreboard-disabled", scoreboardDisabled.stream().map(UUID::toString).toList());
+        config.set("auto-lock-disabled", autoLockDisabled.stream().map(UUID::toString).toList());
         try {
             config.save(file);
         } catch (IOException ignored) {
@@ -94,9 +110,17 @@ public class UserSettingsService {
         keepInventory = config.getBoolean("keep-inventory", plugin.getConfig().getBoolean("settings.keep-inventory-default", false));
         pvp = config.getBoolean("pvp", plugin.getConfig().getBoolean("settings.pvp-default", true));
         scoreboardDisabled.clear();
+        autoLockDisabled.clear();
         for (String uuidString : config.getStringList("scoreboard-disabled")) {
             try {
                 scoreboardDisabled.add(UUID.fromString(uuidString));
+            } catch (IllegalArgumentException ignored) {
+                // ignored
+            }
+        }
+        for (String uuidString : config.getStringList("auto-lock-disabled")) {
+            try {
+                autoLockDisabled.add(UUID.fromString(uuidString));
             } catch (IllegalArgumentException ignored) {
                 // ignored
             }

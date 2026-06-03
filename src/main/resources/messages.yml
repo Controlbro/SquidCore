@@ -82,6 +82,7 @@ pay:
 
 settings:
   scoreboard: '&aScoreboard is now &e{status}&a.'
+  auto-lock: '&aAuto Lock is now &e{status}&a.'
   keep-inventory: '&aKeep inventory is now &e{status}&a.'
   pvp: '&aPVP is now &e{status}&a.'
 
@@ -105,6 +106,11 @@ lock:
   trustall-usage: '&eUsage: /trustall <player>'
   cannot-trust-self: '&cYou cannot trust yourself.'
   not-locked: '&eThat block is not locked.'
+  auto-locked: '&aAuto Lock is enabled, so this block was locked. You can disable Auto Lock in &e/settings&a.'
+
+vanish:
+  enabled: '&aVanish enabled. You are hidden from players and tab without particles.'
+  disabled: '&cVanish disabled. You are visible again.'
 
 mines:
   usage: '&eUsage: /mines <shards bet>'

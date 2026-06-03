@@ -1,6 +1,7 @@
 package com.controlbro.besteconomy.lock;
 
 import com.controlbro.besteconomy.message.MessageManager;
+import com.controlbro.besteconomy.settings.UserSettingsService;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.InventoryHolder;
@@ -33,16 +35,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class LockService implements Listener {
     private final JavaPlugin plugin;
     private final MessageManager messageManager;
+    private final UserSettingsService userSettingsService;
     private final File file;
     private final Map<String, LockEntry> locks = new HashMap<>();
     private final Set<UUID> lockMode = new HashSet<>();
     private final Set<UUID> unlockMode = new HashSet<>();
     private final Map<UUID, UUID> trustMode = new HashMap<>();
     private final Map<UUID, Set<UUID>> globalTrust = new HashMap<>();
+    private final Map<UUID, Long> lastAutoLockNotice = new HashMap<>();
 
-    public LockService(JavaPlugin plugin, MessageManager messageManager) {
+    public LockService(JavaPlugin plugin, MessageManager messageManager, UserSettingsService userSettingsService) {
         this.plugin = plugin;
         this.messageManager = messageManager;
+        this.userSettingsService = userSettingsService;
         this.file = new File(plugin.getDataFolder(), "locks.yml");
         load();
     }
@@ -183,6 +188,22 @@ public class LockService implements Listener {
     }
 
     @EventHandler
+    public void onPlace(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
+        Block block = event.getBlockPlaced();
+        if (!isLockable(block) || !userSettingsService.isAutoLockEnabled(player.getUniqueId())) {
+            return;
+        }
+        String key = key(block);
+        if (locks.containsKey(key)) {
+            return;
+        }
+        locks.put(key, new LockEntry(player.getUniqueId(), player.getName()));
+        save();
+        maybeSendAutoLockNotice(player);
+    }
+
+    @EventHandler
     public void onBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         if (!isLockable(block)) {
@@ -203,6 +224,16 @@ public class LockService implements Listener {
         locks.remove(key);
         save();
         messageManager.send(player, "lock.removed", null);
+    }
+
+    private void maybeSendAutoLockNotice(Player player) {
+        long now = System.currentTimeMillis();
+        long last = lastAutoLockNotice.getOrDefault(player.getUniqueId(), 0L);
+        if (now - last < 30L * 60L * 1000L) {
+            return;
+        }
+        lastAutoLockNotice.put(player.getUniqueId(), now);
+        messageManager.send(player, "lock.auto-locked", null);
     }
 
     private boolean isLockable(Block block) {

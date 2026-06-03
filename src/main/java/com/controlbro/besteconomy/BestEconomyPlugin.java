@@ -5,6 +5,7 @@ import com.controlbro.besteconomy.blackjack.BlackjackService;
 import com.controlbro.besteconomy.coinflip.CoinflipCommand;
 import com.controlbro.besteconomy.coinflip.CoinflipService;
 import com.controlbro.besteconomy.chat.ChatService;
+import com.controlbro.besteconomy.chat.ChatTagPlaceholderExpansion;
 import com.controlbro.besteconomy.chat.TagsCommand;
 import com.controlbro.besteconomy.command.BaltopCommand;
 import com.controlbro.besteconomy.command.BalanceCommand;
@@ -67,6 +68,8 @@ import com.controlbro.besteconomy.shop.ShopPendingCommandService;
 import com.controlbro.besteconomy.shop.ShardAnnounceCommand;
 import com.controlbro.besteconomy.shop.ShopTables;
 import com.controlbro.besteconomy.vault.VaultEconomyProvider;
+import com.controlbro.besteconomy.vanish.VanishCommand;
+import com.controlbro.besteconomy.vanish.VanishService;
 import com.controlbro.besteconomy.visual.ScoreboardService;
 import com.controlbro.besteconomy.visual.TabListService;
 import java.math.BigDecimal;
@@ -108,6 +111,7 @@ public class BestEconomyPlugin extends JavaPlugin {
     private BukkitTask shardRewardTask;
     private BukkitTask autoAnnounceTask;
     private ChatService chatService;
+    private VanishService vanishService;
 
     @Override
     public void onEnable() {
@@ -153,6 +157,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         startHomes();
         startVisuals();
         startChat();
+        startVanish();
     }
 
     @Override
@@ -283,6 +288,8 @@ public class BestEconomyPlugin extends JavaPlugin {
         startLocks();
         startHomes();
         startVisuals();
+        startChat();
+        startVanish();
     }
 
     private void startVisuals() {
@@ -514,6 +521,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         }
         chatService = new ChatService(this);
         Bukkit.getPluginManager().registerEvents(chatService, this);
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new ChatTagPlaceholderExpansion(chatService).register();
+        }
         PluginCommand tags = getCommand("tags");
         if (tags != null) {
             TagsCommand tagsCommand = new TagsCommand(chatService);
@@ -522,12 +532,24 @@ public class BestEconomyPlugin extends JavaPlugin {
         }
     }
 
+    private void startVanish() {
+        if (vanishService != null) {
+            HandlerList.unregisterAll(vanishService);
+        }
+        vanishService = new VanishService(this, messageManager);
+        Bukkit.getPluginManager().registerEvents(vanishService, this);
+        PluginCommand vanish = getCommand("vanish");
+        if (vanish != null) {
+            vanish.setExecutor(new VanishCommand(vanishService, messageManager));
+        }
+    }
+
     private void startLocks() {
         if (lockService != null) {
             HandlerList.unregisterAll(lockService);
             lockService.save();
         }
-        lockService = new LockService(this, messageManager);
+        lockService = new LockService(this, messageManager, userSettingsService);
         Bukkit.getPluginManager().registerEvents(lockService, this);
         PluginCommand lock = getCommand("lock");
         if (lock != null) {
@@ -716,6 +738,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         getConfig().addDefault("auto-announcements.min-seconds", 300);
         getConfig().addDefault("auto-announcements.max-seconds", 480);
         getConfig().addDefault("auto-announcements.lines", java.util.List.of("&d✦ &fSpend your shards at &d/shardshop&f.", "&d✦ &fJoin our Discord with &d/discord&f.", "&d✦ &fVote for rewards using &d/vote&f.", "&d✦ &fVisit our website at &d/website&f."));
+        getConfig().addDefault("chat.formatting-enabled", true);
         getConfig().addDefault("chat.format", "{luckperms_prefix}&r{username}{tag} &7>> &f{message}");
         getConfig().addDefault("chat.fallback-prefix", "");
         getConfig().addDefault("chat.tags.member.display", "&7[Member]");

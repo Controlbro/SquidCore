@@ -19,16 +19,26 @@ public class DiscordWebhookNotifier {
         if (url == null || url.isBlank() || message == null || message.isBlank()) {
             return;
         }
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> post(url, message));
+        String payload = "{\"content\":\"" + escape(message) + "\"}";
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> post(url, payload));
     }
 
-    private void post(String url, String message) {
+    public void sendEmbed(String path, String title, String description, int color) {
+        String url = plugin.getConfig().getString(path, "");
+        if (url == null || url.isBlank() || title == null || title.isBlank()) {
+            return;
+        }
+        String safeDescription = description == null ? "" : description;
+        String payload = "{\"embeds\":[{\"title\":\"" + escape(title) + "\",\"description\":\"" + escape(safeDescription) + "\",\"color\":" + color + "}]}";
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> post(url, payload));
+    }
+
+    private void post(String url, String payload) {
         try {
             HttpURLConnection connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             connection.setDoOutput(true);
-            String payload = "{\"content\":\"" + escape(message) + "\"}";
             byte[] data = payload.getBytes(StandardCharsets.UTF_8);
             connection.setFixedLengthStreamingMode(data.length);
             try (OutputStream output = connection.getOutputStream()) {

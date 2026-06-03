@@ -32,6 +32,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ShopGuiService implements Listener {
@@ -401,8 +403,7 @@ public class ShopGuiService implements Listener {
             if (i == cancelSlot || i == totalSlot) continue;
             ItemStack itemStack = inventory.getItem(i);
             if (itemStack == null || itemStack.getType().isAir()) continue;
-            BigDecimal value = new BigDecimal(values.getString(itemStack.getType().name(), "0"));
-            total = total.add(value.multiply(BigDecimal.valueOf(itemStack.getAmount())));
+            total = total.add(sellValue(itemStack, values));
         }
         return total;
     }
@@ -421,8 +422,57 @@ public class ShopGuiService implements Listener {
             BigDecimal value = new BigDecimal(values.getString(itemStack.getType().name(), "0"));
             if (value.compareTo(BigDecimal.ZERO) > 0) {
                 inventory.setItem(i, null);
+                continue;
+            }
+            ItemStack cleaned = removeSellableShulkerContents(itemStack, values);
+            inventory.setItem(i, cleaned);
+        }
+    }
+
+    private BigDecimal sellValue(ItemStack itemStack, ConfigurationSection values) {
+        BigDecimal total = new BigDecimal(values.getString(itemStack.getType().name(), "0")).multiply(BigDecimal.valueOf(itemStack.getAmount()));
+        if (!(itemStack.getItemMeta() instanceof BlockStateMeta blockStateMeta) || !(blockStateMeta.getBlockState() instanceof ShulkerBox shulkerBox)) {
+            return total;
+        }
+        for (ItemStack contained : shulkerBox.getInventory().getContents()) {
+            if (contained == null || contained.getType().isAir()) {
+                continue;
+            }
+            total = total.add(sellValue(contained, values));
+        }
+        return total;
+    }
+
+    private ItemStack removeSellableShulkerContents(ItemStack itemStack, ConfigurationSection values) {
+        if (!(itemStack.getItemMeta() instanceof BlockStateMeta blockStateMeta) || !(blockStateMeta.getBlockState() instanceof ShulkerBox shulkerBox)) {
+            return itemStack;
+        }
+        boolean changed = false;
+        for (int slot = 0; slot < shulkerBox.getInventory().getSize(); slot++) {
+            ItemStack contained = shulkerBox.getInventory().getItem(slot);
+            if (contained == null || contained.getType().isAir()) {
+                continue;
+            }
+            BigDecimal value = new BigDecimal(values.getString(contained.getType().name(), "0"));
+            if (value.compareTo(BigDecimal.ZERO) > 0) {
+                shulkerBox.getInventory().setItem(slot, null);
+                changed = true;
+                continue;
+            }
+            ItemStack cleaned = removeSellableShulkerContents(contained, values);
+            if (cleaned != contained) {
+                shulkerBox.getInventory().setItem(slot, cleaned);
+                changed = true;
             }
         }
+        if (!changed) {
+            return itemStack;
+        }
+        ItemStack result = itemStack.clone();
+        BlockStateMeta resultMeta = (BlockStateMeta) result.getItemMeta();
+        resultMeta.setBlockState(shulkerBox);
+        result.setItemMeta(resultMeta);
+        return result;
     }
 
     private void clearSellInventory(Inventory inventory) {
