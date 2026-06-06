@@ -1,0 +1,11 @@
+# Chat tag definitions and menu settings.
+# A tag is available when the player has its permission or receives it with /givetag.
+gui:
+  title: '&8Chat Tags'
+  # Inventory sizes are rounded to rows and limited to 18-54 slots.
+  size: 54
+
+tags:
+  member:
+    display: '&7[Member]'
+    permission: 'besteconomy.tags.member'
