@@ -73,9 +73,29 @@ commands:
   tags:
     description: Open the chat tags GUI.
     usage: /tags
+  givetag:
+    description: Give a chat tag to a player.
+    usage: /givetag <tag> <player>
   vanish:
     description: Toggle invisibility from other players and the tab list.
+    aliases: [v]
     usage: /vanish
+  gamemode:
+    description: Change your game mode.
+    aliases: [gm]
+    usage: /gamemode <survival|creative|spectator|adventure>
+  gms:
+    description: Change your game mode to survival.
+    usage: /gms
+  gmc:
+    description: Change your game mode to creative.
+    usage: /gmc
+  gmsp:
+    description: Change your game mode to spectator.
+    usage: /gmsp
+  gma:
+    description: Change your game mode to adventure.
+    usage: /gma
   lock:
     description: Toggle locking mode for containers and doors.
     usage: /lock
@@ -217,6 +237,21 @@ permissions:
     default: op
   besteconomy.vanish.see:
     description: Allows seeing vanished and spectator players.
+    default: op
+  besteconomy.gamemode.survival:
+    description: Allows changing to survival mode.
+    default: op
+  besteconomy.gamemode.creative:
+    description: Allows changing to creative mode.
+    default: op
+  besteconomy.gamemode.spectator:
+    description: Allows changing to spectator mode.
+    default: op
+  besteconomy.gamemode.adventure:
+    description: Allows changing to adventure mode.
+    default: op
+  besteconomy.tags.give:
+    description: Allows giving chat tags to players.
     default: op
   besteconomy.lock.use:
     description: Allows locking containers and doors.

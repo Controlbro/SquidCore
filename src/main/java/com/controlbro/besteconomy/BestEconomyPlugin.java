@@ -7,6 +7,7 @@ import com.controlbro.besteconomy.coinflip.CoinflipService;
 import com.controlbro.besteconomy.chat.ChatService;
 import com.controlbro.besteconomy.chat.ChatTagPlaceholderExpansion;
 import com.controlbro.besteconomy.chat.TagsCommand;
+import com.controlbro.besteconomy.chat.GiveTagCommand;
 import com.controlbro.besteconomy.command.BaltopCommand;
 import com.controlbro.besteconomy.command.BalanceCommand;
 import com.controlbro.besteconomy.command.BugReportCommand;
@@ -15,6 +16,7 @@ import com.controlbro.besteconomy.command.CurrencyCommandRegistrar;
 import com.controlbro.besteconomy.command.EcoCommand;
 import com.controlbro.besteconomy.command.PayCommand;
 import com.controlbro.besteconomy.command.ReloadCommand;
+import com.controlbro.besteconomy.command.GameModeCommand;
 import com.controlbro.besteconomy.currency.Currency;
 import com.controlbro.besteconomy.currency.CurrencyManager;
 import com.controlbro.besteconomy.data.DataStore;
@@ -198,6 +200,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         if (homeService != null) {
             homeService.save();
         }
+        if (chatService != null) {
+            chatService.saveData();
+        }
         if (rtpService != null) {
             rtpService.save();
         }
@@ -239,6 +244,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         if (homeService != null) {
             homeService.save();
             homeService = null;
+        }
+        if (chatService != null) {
+            chatService.saveData();
         }
         if (rtpService != null) {
             rtpService.save();
@@ -369,6 +377,14 @@ public class BestEconomyPlugin extends JavaPlugin {
         PluginCommand bugReport = getCommand("bugreport");
         if (bugReport != null) {
             bugReport.setExecutor(new BugReportCommand(webhookNotifier, messageManager));
+        }
+        GameModeCommand gameModeCommand = new GameModeCommand(messageManager);
+        for (String commandName : java.util.List.of("gamemode", "gms", "gmc", "gmsp", "gma")) {
+            PluginCommand gameMode = getCommand(commandName);
+            if (gameMode != null) {
+                gameMode.setExecutor(gameModeCommand);
+                gameMode.setTabCompleter(gameModeCommand);
+            }
         }
         registerRtpCommands();
         registerLinkCommands();
@@ -525,6 +541,7 @@ public class BestEconomyPlugin extends JavaPlugin {
     private void startChat() {
         if (chatService != null) {
             HandlerList.unregisterAll(chatService);
+            chatService.saveData();
         }
         chatService = new ChatService(this);
         Bukkit.getPluginManager().registerEvents(chatService, this);
@@ -536,6 +553,12 @@ public class BestEconomyPlugin extends JavaPlugin {
             TagsCommand tagsCommand = new TagsCommand(chatService);
             tags.setExecutor(tagsCommand);
             Bukkit.getPluginManager().registerEvents(tagsCommand, this);
+        }
+        PluginCommand giveTag = getCommand("givetag");
+        if (giveTag != null) {
+            GiveTagCommand giveTagCommand = new GiveTagCommand(chatService, messageManager);
+            giveTag.setExecutor(giveTagCommand);
+            giveTag.setTabCompleter(giveTagCommand);
         }
     }
 
@@ -748,8 +771,6 @@ public class BestEconomyPlugin extends JavaPlugin {
         getConfig().addDefault("chat.formatting-enabled", true);
         getConfig().addDefault("chat.format", "{luckperms_prefix}&r{username}{tag} &7>> &f{message}");
         getConfig().addDefault("chat.fallback-prefix", "");
-        getConfig().addDefault("chat.tags.member.display", "&7[Member]");
-        getConfig().addDefault("chat.tags.member.permission", "besteconomy.tags.member");
         getConfig().options().copyDefaults(true);
         saveConfig();
     }
