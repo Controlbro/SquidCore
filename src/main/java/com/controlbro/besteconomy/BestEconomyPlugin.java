@@ -31,6 +31,7 @@ import com.controlbro.besteconomy.home.HomeRespawnListener;
 import com.controlbro.besteconomy.home.HomeService;
 import com.controlbro.besteconomy.home.HomesCommand;
 import com.controlbro.besteconomy.home.SetHomeCommand;
+import com.controlbro.besteconomy.integration.CoreProtectHook;
 import com.controlbro.besteconomy.listener.PlayerJoinListener;
 import com.controlbro.besteconomy.links.LinkCommand;
 import com.controlbro.besteconomy.rtp.AgreeCommand;
@@ -112,11 +113,13 @@ public class BestEconomyPlugin extends JavaPlugin {
     private BukkitTask autoAnnounceTask;
     private ChatService chatService;
     private VanishService vanishService;
+    private CoreProtectHook coreProtectHook;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         ensureConfigDefaults();
+        coreProtectHook = new CoreProtectHook(this);
         messageManager = new MessageManager(this);
         webhookNotifier = new DiscordWebhookNotifier(this);
         currencyManager = new CurrencyManager(this);
@@ -309,6 +312,10 @@ public class BestEconomyPlugin extends JavaPlugin {
             tabListService.stop();
             tabListService = null;
         }
+    }
+
+    public CoreProtectHook getCoreProtectHook() {
+        return coreProtectHook;
     }
 
     private void registerCommands() {

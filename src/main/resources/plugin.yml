@@ -3,7 +3,7 @@ main: com.controlbro.besteconomy.BestEconomyPlugin
 version: 2.7
 api-version: '26.1.2'
 author: Controlbro
-softdepend: [Vault, PlaceholderAPI]
+softdepend: [Vault, PlaceholderAPI, CoreProtect]
 
 commands:
   eco:
