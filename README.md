@@ -18,3 +18,7 @@ BestEconomy does not require PlaceholderAPI for its built-in placeholders. Playe
 
 - `scoreboard.yml` controls the sidebar scoreboard title, update interval, and lines.
 - `tab.yml` controls the tab header, footer, player-name format, online-player display, and permission-based tab prefixes.
+
+## Custom achievements
+
+Custom achievement definitions live in `achievements.yml`. Progress is persisted in `achievement-progress.yml`, batched at the configured `achievements.save-interval-seconds`, and flushed during reload/shutdown. Players can use `/achievements` (or `/ach`) to view numeric partial progress; completed achievements also use vanilla advancement toasts.

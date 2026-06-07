@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class EconomyManager {
     private static final String SHARDS_KEY = "shards";
@@ -17,6 +18,7 @@ public class EconomyManager {
     private final DataStore dataStore;
     private final MySqlShardBalanceStore shardBalanceStore;
     private final Map<UUID, Map<String, BigDecimal>> balances;
+    private final CopyOnWriteArrayList<BalanceChangeListener> balanceChangeListeners = new CopyOnWriteArrayList<>();
 
     public EconomyManager(CurrencyManager currencyManager, DataStore dataStore, MySqlShardBalanceStore shardBalanceStore) {
         this.currencyManager = currencyManager;
@@ -56,8 +58,10 @@ public class EconomyManager {
 
     public void setBalance(UUID uuid, Currency currency, BigDecimal amount) {
         ensurePlayer(uuid);
+        BigDecimal oldBalance = getBalance(uuid, currency);
         BigDecimal clamped = clamp(amount, currency);
         balances.get(uuid).put(currency.getName().toLowerCase(), clamped);
+        notifyBalanceChanged(uuid, currency, oldBalance, clamped, BigDecimal.ZERO);
         if (isShardCurrency(currency)) {
             persistShardBalance(uuid, clamped);
         }
@@ -69,6 +73,7 @@ public class EconomyManager {
         BigDecimal newBalance = current.add(amount);
         BigDecimal clamped = clamp(newBalance, currency);
         balances.get(uuid).put(currency.getName().toLowerCase(), clamped);
+        notifyBalanceChanged(uuid, currency, current, clamped, clamped.subtract(current).max(BigDecimal.ZERO));
         if (isShardCurrency(currency)) {
             persistShardBalance(uuid, clamped);
         }
@@ -81,6 +86,7 @@ public class EconomyManager {
         BigDecimal newBalance = current.subtract(amount);
         BigDecimal clamped = clamp(newBalance, currency);
         balances.get(uuid).put(currency.getName().toLowerCase(), clamped);
+        notifyBalanceChanged(uuid, currency, current, clamped, BigDecimal.ZERO);
         if (isShardCurrency(currency)) {
             persistShardBalance(uuid, clamped);
         }
@@ -89,7 +95,9 @@ public class EconomyManager {
 
     public BigDecimal resetBalance(UUID uuid, Currency currency) {
         ensurePlayer(uuid);
+        BigDecimal oldBalance = getBalance(uuid, currency);
         balances.get(uuid).put(currency.getName().toLowerCase(), currency.getStartingBalance());
+        notifyBalanceChanged(uuid, currency, oldBalance, currency.getStartingBalance(), BigDecimal.ZERO);
         if (isShardCurrency(currency)) {
             persistShardBalance(uuid, currency.getStartingBalance());
         }
@@ -109,6 +117,21 @@ public class EconomyManager {
             .forEach(entry -> result.put(entry.getKey(),
                 entry.getValue().getOrDefault(currency.getName().toLowerCase(), currency.getStartingBalance())));
         return Collections.unmodifiableMap(result);
+    }
+
+    public void addBalanceChangeListener(BalanceChangeListener listener) {
+        balanceChangeListeners.add(listener);
+    }
+
+    public void removeBalanceChangeListener(BalanceChangeListener listener) {
+        balanceChangeListeners.remove(listener);
+    }
+
+    private void notifyBalanceChanged(UUID uuid, Currency currency, BigDecimal oldBalance, BigDecimal newBalance, BigDecimal earnedAmount) {
+        if (oldBalance.compareTo(newBalance) == 0) return;
+        for (BalanceChangeListener listener : balanceChangeListeners) {
+            listener.onBalanceChanged(uuid, currency, oldBalance, newBalance, earnedAmount);
+        }
     }
 
     private void loadShardBalancesFromMySql() {
