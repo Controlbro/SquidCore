@@ -93,8 +93,8 @@ public class AchievementService implements Listener, CommandExecutor, BalanceCha
         NamespacedKey rootKey = key(ROOT_ID);
         Bukkit.getUnsafe().removeAdvancement(rootKey);
         Bukkit.getUnsafe().loadAdvancement(rootKey, "{\"display\":{\"icon\":{\"id\":\"minecraft:heart_of_the_sea\"},"
-            + "\"title\":{\"text\":\"SquidCore Achievements\"},\"description\":{\"text\":\"Custom server achievements\"},"
-            + "\"background\":\"minecraft:textures/gui/advancements/backgrounds/stone.png\",\"frame\":\"task\","
+            + "\"title\":{\"text\":\"SheepSquid\"},\"description\":{\"text\":\"Custom server achievements\"},"
+            + "\"background\":\"minecraft:textures/block/stone.png\",\"frame\":\"task\","
             + "\"show_toast\":false,\"announce_to_chat\":false,\"hidden\":false},\"criteria\":{\"" + CRITERION
             + "\":{\"trigger\":\"minecraft:impossible\"}}}");
         for (AchievementDefinition definition : definitions.values()) {
@@ -110,7 +110,7 @@ public class AchievementService implements Listener, CommandExecutor, BalanceCha
         return "{" + parent + "\"display\":{\"icon\":{\"id\":\"minecraft:" + definition.icon().getKey().getKey()
             + "\"},\"title\":{\"text\":\"" + escape(definition.name()) + "\"},\"description\":{\"text\":\""
             + escape(definition.description()) + "\"},\"frame\":\"" + escape(definition.frame())
-            + "\",\"show_toast\":true,\"announce_to_chat\":false,\"hidden\":false},\"criteria\":{\"" + CRITERION
+            + "\",\"show_toast\":true,\"announce_to_chat\":true,\"hidden\":false},\"criteria\":{\"" + CRITERION
             + "\":{\"trigger\":\"minecraft:impossible\"}}}";
     }
 
