@@ -13,7 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.bukkit.Advancement;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
