@@ -6,6 +6,10 @@ author: Controlbro
 softdepend: [Vault, PlaceholderAPI, CoreProtect]
 
 commands:
+  achievements:
+    description: View your custom achievement progress.
+    aliases: [ach]
+    usage: /achievements
   eco:
     description: Admin economy command for Money and Shards.
     aliases: [economy]

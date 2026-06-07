@@ -1,0 +1,87 @@
+# Definitions are loaded on startup/reload. IDs are also used as advancement keys.
+achievements:
+  penny_pincher:
+    name: Penny Pincher
+    description: Reach $1,000.
+    icon: GOLD_NUGGET
+    type: money
+    target: 1000
+  getting_somewhere:
+    name: Getting Somewhere
+    description: Reach $10,000.
+    icon: GOLD_INGOT
+    type: money
+    target: 10000
+    parent: penny_pincher
+  well_off:
+    name: Well Off
+    description: Reach $100,000.
+    icon: GOLD_BLOCK
+    type: money
+    target: 100000
+    parent: getting_somewhere
+  wealthy:
+    name: Wealthy
+    description: Reach $1,000,000.
+    icon: EMERALD
+    frame: goal
+    type: money
+    target: 1000000
+    parent: well_off
+  millionaire:
+    name: Millionaire
+    description: Reach $10,000,000.
+    icon: EMERALD_BLOCK
+    frame: challenge
+    type: money
+    target: 10000000
+    parent: wealthy
+  billionaire:
+    name: Billionaire
+    description: Reach $1,000,000,000.
+    icon: NETHER_STAR
+    frame: challenge
+    type: money
+    target: 1000000000
+    parent: millionaire
+  entrepreneur:
+    name: Entrepreneur
+    description: Create your first market listing.
+    icon: CHEST
+    type: market_listing
+    target: 1
+  squid_rich:
+    name: Squid Rich
+    description: Earn 1,000 Shards.
+    icon: PRISMARINE_CRYSTALS
+    type: lifetime_shards
+    target: 1000
+  bob_the_builder:
+    name: Bob the Builder
+    description: Place 500,000 blocks.
+    icon: BRICKS
+    frame: challenge
+    type: blocks_placed
+    target: 500000
+  is_this_the_end:
+    name: Is This The End?
+    description: Summon and kill 20 Ender Dragons.
+    icon: DRAGON_HEAD
+    frame: challenge
+    type: dragons
+    target: 20
+  only_the_start:
+    name: It's Only The Start
+    description: Summon and kill 21 Ender Dragons.
+    icon: DRAGON_EGG
+    frame: challenge
+    type: dragons
+    target: 21
+    parent: is_this_the_end
+  five_nights:
+    name: 5 Nights
+    description: Stay awake for 5 consecutive Minecraft nights.
+    icon: RED_BED
+    frame: goal
+    type: sleepless_nights
+    target: 5

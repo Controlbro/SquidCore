@@ -100,3 +100,7 @@ chat:
   formatting-enabled: true
   format: "{luckperms_prefix}&r{username}{tag} &7>> &f{message}"
   fallback-prefix: ""
+
+achievements:
+  # Progress is kept in memory and flushed as a batch at this interval and on shutdown/reload.
+  save-interval-seconds: 300

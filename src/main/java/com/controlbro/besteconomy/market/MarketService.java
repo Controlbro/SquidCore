@@ -1,5 +1,6 @@
 package com.controlbro.besteconomy.market;
 
+import com.controlbro.besteconomy.achievement.AchievementService;
 import com.controlbro.besteconomy.currency.Currency;
 import com.controlbro.besteconomy.currency.CurrencyManager;
 import com.controlbro.besteconomy.data.EconomyManager;
@@ -72,17 +73,19 @@ public class MarketService implements Listener {
     private final CurrencyManager currencyManager;
     private final MessageManager messageManager;
     private final DiscordWebhookNotifier webhookNotifier;
+    private final AchievementService achievementService;
     private final File file;
     private final Map<UUID, MarketStall> stalls = new LinkedHashMap<>();
     private final Map<UUID, ChatInput> chatInputs = new HashMap<>();
     private final Set<UUID> suppressedMarketCloses = new HashSet<>();
 
-    public MarketService(JavaPlugin plugin, EconomyManager economyManager, CurrencyManager currencyManager, MessageManager messageManager, DiscordWebhookNotifier webhookNotifier) {
+    public MarketService(JavaPlugin plugin, EconomyManager economyManager, CurrencyManager currencyManager, MessageManager messageManager, DiscordWebhookNotifier webhookNotifier, AchievementService achievementService) {
         this.plugin = plugin;
         this.economyManager = economyManager;
         this.currencyManager = currencyManager;
         this.messageManager = messageManager;
         this.webhookNotifier = webhookNotifier;
+        this.achievementService = achievementService;
         this.file = new File(plugin.getDataFolder(), "market.yml");
         load();
     }
@@ -707,6 +710,9 @@ public class MarketService implements Listener {
         save();
         playDing(player);
         messageManager.send(player, "market.listing-created", null);
+        if (achievementService != null) {
+            achievementService.recordMarketListing(player);
+        }
         openListingManagement(player, listing);
     }
 

@@ -1,5 +1,6 @@
 package com.controlbro.besteconomy;
 
+import com.controlbro.besteconomy.achievement.AchievementService;
 import com.controlbro.besteconomy.blackjack.BlackjackCommand;
 import com.controlbro.besteconomy.blackjack.BlackjackService;
 import com.controlbro.besteconomy.coinflip.CoinflipCommand;
@@ -86,6 +87,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class BestEconomyPlugin extends JavaPlugin {
     private CurrencyManager currencyManager;
+    private AchievementService achievementService;
     private EconomyManager economyManager;
     private MySqlShardBalanceStore mySqlShardBalanceStore;
     private MessageManager messageManager;
@@ -131,6 +133,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         messageManager.setPlaceholderService(placeholderService);
         commandHandler = new CurrencyCommandHandler(this, currencyManager, economyManager, messageManager);
         commandRegistrar = new CurrencyCommandRegistrar(this, currencyManager, commandHandler);
+        achievementService = new AchievementService(this, economyManager, currencyManager);
 
         registerCommands();
         commandRegistrar.registerAll();
@@ -207,6 +210,9 @@ public class BestEconomyPlugin extends JavaPlugin {
             rtpService.save();
         }
         stopVisuals();
+        if (achievementService != null) {
+            achievementService.stop();
+        }
         economyManager.save();
         economyManager.shutdown();
         commandRegistrar.unregisterAll();
@@ -253,6 +259,10 @@ public class BestEconomyPlugin extends JavaPlugin {
             rtpService = null;
         }
         settingsMenuService = null;
+        if (achievementService != null) {
+            achievementService.stop();
+            achievementService = null;
+        }
         if (economyManager != null) {
             economyManager.save();
             economyManager.shutdown();
@@ -272,6 +282,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         messageManager.setPlaceholderService(placeholderService);
         commandHandler = new CurrencyCommandHandler(this, currencyManager, economyManager, messageManager);
         commandRegistrar = new CurrencyCommandRegistrar(this, currencyManager, commandHandler);
+        achievementService = new AchievementService(this, economyManager, currencyManager);
         registerCommands();
         commandRegistrar.registerAll();
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this, economyManager, messageManager, rtpService), this);
@@ -329,6 +340,10 @@ public class BestEconomyPlugin extends JavaPlugin {
     private void registerCommands() {
         Currency defaultCurrency = currencyManager.getDefaultCurrency();
         Currency shardCurrency = currencyManager.getCurrency("shards");
+        PluginCommand achievements = getCommand("achievements");
+        if (achievements != null && achievementService != null) {
+            achievements.setExecutor(achievementService);
+        }
         if (defaultCurrency == null) {
             getLogger().severe("Default currency not found in config.yml.");
             Bukkit.getPluginManager().disablePlugin(this);
@@ -463,7 +478,7 @@ public class BestEconomyPlugin extends JavaPlugin {
             HandlerList.unregisterAll(marketService);
             marketService.save();
         }
-        marketService = new MarketService(this, economyManager, currencyManager, messageManager, webhookNotifier);
+        marketService = new MarketService(this, economyManager, currencyManager, messageManager, webhookNotifier, achievementService);
         Bukkit.getPluginManager().registerEvents(marketService, this);
         PluginCommand market = getCommand("market");
         if (market != null) {
