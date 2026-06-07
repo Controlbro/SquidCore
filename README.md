@@ -21,4 +21,4 @@ BestEconomy does not require PlaceholderAPI for its built-in placeholders. Playe
 
 ## Custom achievements
 
-Custom achievement definitions live in `achievements.yml`. Progress is persisted in `achievement-progress.yml`, batched at the configured `achievements.save-interval-seconds`, and flushed during reload/shutdown. Players can use `/achievements` (or `/ach`) to view numeric partial progress; completed achievements also use vanilla advancement toasts.
+Custom achievement definitions live in `achievements.yml`. Progress is persisted in `achievement-progress.yml`, batched at the configured `achievements.save-interval-seconds`, and flushed during reload/shutdown. Players can use `/achievements` (or `/ach`) to view numeric partial progress; completed achievements use vanilla advancement toasts and chat announcements, which DiscordSRV can relay through its advancement notifications.
