@@ -162,6 +162,12 @@ commands:
   tpahere:
     description: Request another player teleport to you.
     usage: /tpahere <player>
+  tpblock:
+    description: Toggle whether you receive new teleport requests.
+    usage: /tpblock
+  tpban:
+    description: Ban a player from sending teleport requests.
+    usage: /tpban <player> <reason> <1h|1d|1w|1m|p>
   tpaccept:
     description: Accept an incoming teleport request.
     usage: /tpaccept
@@ -274,6 +280,10 @@ permissions:
     default: op
   besteconomy.onboarding.setspawn:
     description: Allows setting the onboarding spawnpoint.
+    default: op
+
+  besteconomy.teleport.ban:
+    description: Allows banning players from sending teleport requests.
     default: op
 
   besteconomy.home.use:

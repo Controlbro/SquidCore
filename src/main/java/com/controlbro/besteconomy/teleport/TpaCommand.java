@@ -24,6 +24,12 @@ public class TpaCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.RED + "Only players can use this command.");
             return true;
         }
+        TeleportService.TeleportBan ban = teleportService.getActiveBan(player.getUniqueId());
+        if (ban != null) {
+            String duration = ban.permanent() ? "permanently" : "until " + java.time.Instant.ofEpochMilli(ban.expiresAt());
+            player.sendMessage(ChatColor.RED + "You are banned from sending teleport requests " + duration + ". Reason: " + ban.reason());
+            return true;
+        }
         if (args.length != 1) {
             player.sendMessage(ChatColor.YELLOW + "Usage: /" + label + " <player>");
             return true;
@@ -31,6 +37,10 @@ public class TpaCommand implements CommandExecutor, TabCompleter {
         Player target = Bukkit.getPlayerExact(args[0]);
         if (target == null) {
             player.sendMessage(ChatColor.RED + "That player is not online.");
+            return true;
+        }
+        if (teleportService.isRequestBlocking(target.getUniqueId())) {
+            player.sendMessage(ChatColor.RED + target.getName() + " is blocking teleport requests.");
             return true;
         }
         if (target.equals(player)) {
