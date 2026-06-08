@@ -49,6 +49,10 @@ webshop:
 blackjack:
   blackjack-payout-multiplier: "2.5"
   win-payout-multiplier: "2"
+settings:
+  keep-inventory-default: true
+  pvp-default: false
+
 rtp:
   max-uses: 3
   range: 5000

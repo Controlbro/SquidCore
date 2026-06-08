@@ -101,14 +101,14 @@ public class UserSettingsService {
 
     private void load() {
         if (!file.exists()) {
-            keepInventory = plugin.getConfig().getBoolean("settings.keep-inventory-default", false);
-            pvp = plugin.getConfig().getBoolean("settings.pvp-default", true);
+            keepInventory = plugin.getConfig().getBoolean("settings.keep-inventory-default", true);
+            pvp = plugin.getConfig().getBoolean("settings.pvp-default", false);
             save();
             return;
         }
         YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
-        keepInventory = config.getBoolean("keep-inventory", plugin.getConfig().getBoolean("settings.keep-inventory-default", false));
-        pvp = config.getBoolean("pvp", plugin.getConfig().getBoolean("settings.pvp-default", true));
+        keepInventory = config.getBoolean("keep-inventory", plugin.getConfig().getBoolean("settings.keep-inventory-default", true));
+        pvp = config.getBoolean("pvp", plugin.getConfig().getBoolean("settings.pvp-default", false));
         scoreboardDisabled.clear();
         autoLockDisabled.clear();
         for (String uuidString : config.getStringList("scoreboard-disabled")) {

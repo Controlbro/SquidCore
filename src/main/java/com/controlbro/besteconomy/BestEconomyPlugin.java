@@ -61,6 +61,8 @@ import com.controlbro.besteconomy.settings.UserSettingsService;
 import com.controlbro.besteconomy.teleport.BackCommand;
 import com.controlbro.besteconomy.teleport.TeleportService;
 import com.controlbro.besteconomy.teleport.TpAcceptCommand;
+import com.controlbro.besteconomy.teleport.TpBanCommand;
+import com.controlbro.besteconomy.teleport.TpBlockCommand;
 import com.controlbro.besteconomy.teleport.TpDenyCommand;
 import com.controlbro.besteconomy.teleport.TpaCommand;
 import com.controlbro.besteconomy.util.DiscordWebhookNotifier;
@@ -203,6 +205,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         if (homeService != null) {
             homeService.save();
         }
+        if (teleportService != null) {
+            teleportService.save();
+        }
         if (chatService != null) {
             chatService.saveData();
         }
@@ -250,6 +255,10 @@ public class BestEconomyPlugin extends JavaPlugin {
         if (homeService != null) {
             homeService.save();
             homeService = null;
+        }
+        if (teleportService != null) {
+            teleportService.save();
+            teleportService = null;
         }
         if (chatService != null) {
             chatService.saveData();
@@ -620,6 +629,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         if (homeService != null) {
             homeService.save();
         }
+        if (teleportService != null) {
+            teleportService.save();
+        }
         homeService = new HomeService(this);
         teleportService = new TeleportService(this);
         Bukkit.getPluginManager().registerEvents(teleportService, this);
@@ -657,6 +669,16 @@ public class BestEconomyPlugin extends JavaPlugin {
             TpaCommand tpahereCommand = new TpaCommand(teleportService, true);
             tpaHere.setExecutor(tpahereCommand);
             tpaHere.setTabCompleter(tpahereCommand);
+        }
+        PluginCommand tpblock = getCommand("tpblock");
+        if (tpblock != null) {
+            tpblock.setExecutor(new TpBlockCommand(teleportService));
+        }
+        PluginCommand tpban = getCommand("tpban");
+        if (tpban != null) {
+            TpBanCommand tpBanCommand = new TpBanCommand(teleportService);
+            tpban.setExecutor(tpBanCommand);
+            tpban.setTabCompleter(tpBanCommand);
         }
         PluginCommand tpaccept = getCommand("tpaccept");
         if (tpaccept != null) {
@@ -762,8 +784,8 @@ public class BestEconomyPlugin extends JavaPlugin {
         getConfig().addDefault("mines.multiplier-increase", "0.25");
         getConfig().addDefault("blackjack.blackjack-payout-multiplier", "2.5");
         getConfig().addDefault("blackjack.win-payout-multiplier", "2");
-        getConfig().addDefault("settings.keep-inventory-default", false);
-        getConfig().addDefault("settings.pvp-default", true);
+        getConfig().addDefault("settings.keep-inventory-default", true);
+        getConfig().addDefault("settings.pvp-default", false);
         getConfig().addDefault("rtp.max-uses", 3);
         getConfig().addDefault("rtp.range", 5000);
         getConfig().addDefault("rtp.min-range", 0);

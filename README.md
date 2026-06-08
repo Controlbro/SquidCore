@@ -22,3 +22,10 @@ BestEconomy does not require PlaceholderAPI for its built-in placeholders. Playe
 ## Custom achievements
 
 Custom achievement definitions live in `achievements.yml`. Progress is persisted in `achievement-progress.yml`, batched at the configured `achievements.save-interval-seconds`, and flushed during reload/shutdown. Players can use `/achievements` (or `/ach`) to view numeric partial progress; completed achievements use vanilla advancement toasts and chat announcements, which DiscordSRV can relay through its advancement notifications.
+
+## Teleport requests
+
+- `/tpa <player>` and `/tpahere <player>` send teleport requests.
+- `/tpblock` toggles whether a player receives new teleport requests; the preference persists across restarts.
+- Admins with `besteconomy.teleport.ban` can use `/tpban <player> <reason> <1h|1d|1w|1m|p>` to prevent a player from sending `/tpa` or `/tpahere` requests. Reasons may contain spaces, `1m` means 30 days, and `p` is permanent.
+- `/tpban <player> unban` removes a teleport ban. Teleport-banned players can still use `/tpaccept` and `/tpdeny` on requests they receive.
