@@ -1,6 +1,7 @@
 package com.controlbro.besteconomy.chat;
 
 import com.controlbro.besteconomy.BestEconomyPlugin;
+import com.controlbro.besteconomy.player.NicknameService;
 import com.controlbro.besteconomy.util.ColorUtil;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import java.io.File;
@@ -27,13 +28,15 @@ import org.bukkit.event.Listener;
 
 public class ChatService implements Listener {
     private final BestEconomyPlugin plugin;
+    private final NicknameService nicknameService;
     private final File dataFile;
     private final Map<UUID, String> selectedTags = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> grantedTags = new ConcurrentHashMap<>();
     private FileConfiguration tagsConfig;
 
-    public ChatService(BestEconomyPlugin plugin) {
+    public ChatService(BestEconomyPlugin plugin, NicknameService nicknameService) {
         this.plugin = plugin;
+        this.nicknameService = nicknameService;
         File configFile = new File(plugin.getDataFolder(), "tags.yml");
         boolean newConfig = !configFile.exists();
         if (newConfig) plugin.saveResource("tags.yml", false);
@@ -49,7 +52,7 @@ public class ChatService implements Listener {
         Player player = event.getPlayer();
         String format = plugin.getConfig().getString("chat.format", "{luckperms_prefix}&r{username}{tag} &7>> &f{message}");
         String message = LegacyComponentSerializer.legacySection().serialize(event.message());
-        String rendered = format.replace("{luckperms_prefix}", resolvePrefix(player)).replace("{username}", player.getName()).replace("{tag}", renderTag(player)).replace("{message}", message);
+        String rendered = format.replace("{luckperms_prefix}", resolvePrefix(player)).replace("{username}", nicknameService.displayName(player)).replace("{tag}", renderTag(player)).replace("{message}", message);
         Component formatted = ColorUtil.colorize(rendered);
         event.setCancelled(true);
         Bukkit.getScheduler().runTask(plugin, () -> Bukkit.broadcast(formatted));

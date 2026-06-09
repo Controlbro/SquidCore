@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import org.bukkit.Bukkit;
 import org.bukkit.Statistic;
 import org.bukkit.command.CommandSender;
@@ -19,6 +20,7 @@ public class InternalPlaceholderService {
     private final EconomyManager economyManager;
     private final CurrencyManager currencyManager;
     private final Map<UUID, Long> sessionStartTimes = new HashMap<>();
+    private Function<Player, String> playerNameProvider = Player::getName;
 
     public InternalPlaceholderService(EconomyManager economyManager, CurrencyManager currencyManager) {
         this.economyManager = economyManager;
@@ -49,8 +51,9 @@ public class InternalPlaceholderService {
         String playtime = formattedPlaytime(player);
         String ping = String.valueOf(ping(player));
         String sessionTime = formattedSessionTime(player);
-        placeholders.put("player", player.getName());
-        placeholders.put("Player", player.getName());
+        String playerName = playerNameProvider.apply(player);
+        placeholders.put("player", playerName);
+        placeholders.put("Player", playerName);
         placeholders.put("money", money);
         placeholders.put("Money", money);
         placeholders.put("shards", shards);
@@ -63,6 +66,10 @@ public class InternalPlaceholderService {
         placeholders.put("sessiontime", sessionTime);
         placeholders.put("SessionTime", sessionTime);
         return placeholders;
+    }
+
+    public void setPlayerNameProvider(Function<Player, String> playerNameProvider) {
+        this.playerNameProvider = playerNameProvider == null ? Player::getName : playerNameProvider;
     }
 
     public Map<String, String> serverPlaceholders() {
