@@ -55,6 +55,11 @@ import com.controlbro.besteconomy.message.MessageManager;
 import com.controlbro.besteconomy.mines.MinesCommand;
 import com.controlbro.besteconomy.mines.MinesService;
 import com.controlbro.besteconomy.placeholder.InternalPlaceholderService;
+import com.controlbro.besteconomy.player.NickCommand;
+import com.controlbro.besteconomy.player.NicknameService;
+import com.controlbro.besteconomy.player.RealNameCommand;
+import com.controlbro.besteconomy.player.ResetNickCommand;
+import com.controlbro.besteconomy.player.UtilityCommand;
 import com.controlbro.besteconomy.settings.SettingsCommand;
 import com.controlbro.besteconomy.settings.SettingsMenuService;
 import com.controlbro.besteconomy.settings.UserSettingsService;
@@ -118,6 +123,7 @@ public class BestEconomyPlugin extends JavaPlugin {
     private BukkitTask shardRewardTask;
     private BukkitTask autoAnnounceTask;
     private ChatService chatService;
+    private NicknameService nicknameService;
     private VanishService vanishService;
     private CoreProtectHook coreProtectHook;
 
@@ -136,6 +142,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         commandHandler = new CurrencyCommandHandler(this, currencyManager, economyManager, messageManager);
         commandRegistrar = new CurrencyCommandRegistrar(this, currencyManager, commandHandler);
         achievementService = new AchievementService(this, economyManager, currencyManager);
+        startNicknames();
 
         registerCommands();
         commandRegistrar.registerAll();
@@ -210,6 +217,9 @@ public class BestEconomyPlugin extends JavaPlugin {
         }
         if (chatService != null) {
             chatService.saveData();
+        }
+        if (nicknameService != null) {
+            nicknameService.save();
         }
         if (rtpService != null) {
             rtpService.save();
@@ -292,6 +302,7 @@ public class BestEconomyPlugin extends JavaPlugin {
         commandHandler = new CurrencyCommandHandler(this, currencyManager, economyManager, messageManager);
         commandRegistrar = new CurrencyCommandRegistrar(this, currencyManager, commandHandler);
         achievementService = new AchievementService(this, economyManager, currencyManager);
+        startNicknames();
         registerCommands();
         commandRegistrar.registerAll();
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this, economyManager, messageManager, rtpService), this);
@@ -410,8 +421,45 @@ public class BestEconomyPlugin extends JavaPlugin {
                 gameMode.setTabCompleter(gameModeCommand);
             }
         }
+        registerPlayerCommands();
         registerRtpCommands();
         registerLinkCommands();
+    }
+
+    private void startNicknames() {
+        if (nicknameService != null) {
+            HandlerList.unregisterAll(nicknameService);
+            nicknameService.save();
+        }
+        nicknameService = new NicknameService(this);
+        placeholderService.setPlayerNameProvider(nicknameService::displayName);
+        Bukkit.getPluginManager().registerEvents(nicknameService, this);
+    }
+
+    private void registerPlayerCommands() {
+        PluginCommand nick = getCommand("nick");
+        if (nick != null) {
+            nick.setExecutor(new NickCommand(nicknameService, messageManager));
+        }
+        PluginCommand realName = getCommand("realname");
+        if (realName != null) {
+            RealNameCommand command = new RealNameCommand(nicknameService, messageManager);
+            realName.setExecutor(command);
+            realName.setTabCompleter(command);
+        }
+        PluginCommand resetNick = getCommand("resetnick");
+        if (resetNick != null) {
+            ResetNickCommand command = new ResetNickCommand(nicknameService, messageManager);
+            resetNick.setExecutor(command);
+            resetNick.setTabCompleter(command);
+        }
+        UtilityCommand utilityCommand = new UtilityCommand(messageManager);
+        for (String commandName : java.util.List.of("workbench", "enderchest", "hat")) {
+            PluginCommand utility = getCommand(commandName);
+            if (utility != null) {
+                utility.setExecutor(utilityCommand);
+            }
+        }
     }
 
     private void registerRtpCommands() {
@@ -567,7 +615,7 @@ public class BestEconomyPlugin extends JavaPlugin {
             HandlerList.unregisterAll(chatService);
             chatService.saveData();
         }
-        chatService = new ChatService(this);
+        chatService = new ChatService(this, nicknameService);
         Bukkit.getPluginManager().registerEvents(chatService, this);
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new ChatTagPlaceholderExpansion(chatService).register();

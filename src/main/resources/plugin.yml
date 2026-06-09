@@ -178,7 +178,52 @@ commands:
     description: Return to your previous teleport/death location.
     usage: /back
 
+  nick:
+    description: Set your nickname with optional color codes.
+    usage: /nick <nickname>
+  realname:
+    description: Show the real name of an online player or nickname.
+    usage: /realname <player>
+  resetnick:
+    description: Reset your nickname or another player's nickname.
+    usage: /resetnick [player]
+  workbench:
+    description: Open a crafting table.
+    aliases: [wb]
+    usage: /workbench
+  enderchest:
+    description: Open your ender chest.
+    aliases: [ec]
+    usage: /enderchest
+  hat:
+    description: Equip the block in your main hand as a hat.
+    usage: /hat
+
 permissions:
+  besteconomy.nick:
+    description: Allows setting your own nickname with color codes.
+    default: op
+  besteconomy.nick.formatting:
+    description: Allows formatting codes such as bold and italic in nicknames.
+    default: op
+  besteconomy.nick.reset:
+    description: Allows resetting your own nickname.
+    default: op
+  besteconomy.nick.reset.others:
+    description: Allows resetting other players' nicknames.
+    default: op
+  besteconomy.realname:
+    description: Allows looking up the real name behind a nickname.
+    default: op
+  besteconomy.workbench:
+    description: Allows opening a crafting table anywhere.
+    default: op
+  besteconomy.enderchest:
+    description: Allows opening your ender chest anywhere.
+    default: op
+  besteconomy.hat:
+    description: Allows equipping a held block as a hat.
+    default: op
   besteconomy.eco.give:
     description: Allows giving Money or Shards.
     default: op

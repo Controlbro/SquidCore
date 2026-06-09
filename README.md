@@ -29,3 +29,13 @@ Custom achievement definitions live in `achievements.yml`. Progress is persisted
 - `/tpblock` toggles whether a player receives new teleport requests; the preference persists across restarts.
 - Admins with `besteconomy.teleport.ban` can use `/tpban <player> <reason> <1h|1d|1w|1m|p>` to prevent a player from sending `/tpa` or `/tpahere` requests. Reasons may contain spaces, `1m` means 30 days, and `p` is permanent.
 - `/tpban <player> unban` removes a teleport ban. Teleport-banned players can still use `/tpaccept` and `/tpdeny` on requests they receive.
+
+
+## Player utility commands
+
+All utility features require explicit permission nodes (their defaults are operator-only):
+
+- `/nick <nickname>` sets a 3-16 character nickname and supports `&` color codes with `besteconomy.nick`. Formatting codes such as bold and italic additionally require `besteconomy.nick.formatting`.
+- `/realname <player>` resolves an online real name or nickname with `besteconomy.realname`.
+- `/resetnick` resets your nickname with `besteconomy.nick.reset`; `/resetnick <player>` additionally requires `besteconomy.nick.reset.others`.
+- `/workbench` (`/wb`), `/enderchest` (`/ec`), and `/hat` require `besteconomy.workbench`, `besteconomy.enderchest`, and `besteconomy.hat`, respectively.
